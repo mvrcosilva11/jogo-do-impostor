@@ -9,7 +9,37 @@ const state = {
   word: null,         // { p, d, c }
   revealIndex: 0,
   starter: null,
+  usedWords: new Set(), // palavras já saídas nesta sessão (não repetir)
 };
+
+// Escolhe a palavra: 50/50 entre ATUALIDADE e BANCO (probabilidade igual),
+// sem repetir dentro da mesma sessão de abertura.
+function isTrend(w) { return !!(w.c && w.c.indexOf("Atualidade") === 0); }
+
+function pickWord() {
+  const used = state.usedWords;
+  const bank = WORDS.filter((w) => !isTrend(w));
+  const trend = WORDS.filter(isTrend);
+  let bankAvail = bank.filter((w) => !used.has(w.p));
+  let trendAvail = trend.filter((w) => !used.has(w.p));
+
+  // se tudo já saiu, recomeça a sessão
+  if (!bankAvail.length && !trendAvail.length) {
+    used.clear();
+    bankAvail = bank;
+    trendAvail = trend;
+  }
+
+  let pool;
+  if (bankAvail.length && trendAvail.length) {
+    pool = Math.random() < 0.5 ? trendAvail : bankAvail; // moeda ao ar: igual
+  } else {
+    pool = bankAvail.length ? bankAvail : trendAvail;     // só uma fonte disponível
+  }
+  const w = pool[Math.floor(Math.random() * pool.length)];
+  used.add(w.p);
+  return w;
+}
 
 // ── Helpers ──
 const $ = (sel) => document.querySelector(sel);
@@ -165,8 +195,8 @@ function assignRoles() {
     count = Math.min(state.impostorCount, maxImpostorsManual(n));
   }
 
-  // escolher palavra
-  state.word = WORDS[Math.floor(Math.random() * WORDS.length)];
+  // escolher palavra (50/50 atualidade/banco, sem repetir na sessão)
+  state.word = pickWord();
 
   // escolher quais jogadores são impostores
   const idxs = shuffle(names.map((_, i) => i)).slice(0, count);
