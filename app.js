@@ -202,7 +202,15 @@ function assignRoles() {
   const idxs = shuffle(names.map((_, i) => i)).slice(0, count);
   const impostorSet = new Set(idxs);
 
-  state.roles = names.map((name, i) => ({ name, isImpostor: impostorSet.has(i) }));
+  state.roles = names.map((name, i) => ({ name, isImpostor: impostorSet.has(i), hint: null }));
+
+  // Caso especial: TODOS são impostores → cada um recebe uma pista aleatória e DIFERENTE
+  // (não há palavra comum, por isso as pistas são independentes entre si).
+  if (count === names.length) {
+    const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
+    state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
+  }
+
   state.revealIndex = 0;
 }
 
@@ -220,12 +228,13 @@ function renderRevealCard() {
 
   const back = $("#card-back");
   back.className = "card-face card-back " + (role.isImpostor ? "is-impostor" : "is-word");
-  const hasHint = !!(state.word.d && state.word.d.trim());
+  const hintWord = role.hint || state.word.d; // role.hint só existe no modo "todos impostores"
+  const hasHint = !!(hintWord && hintWord.trim());
   if (role.isImpostor) {
     back.innerHTML = hasHint
       ? `
         <div class="role-label">🤫 És o impostor</div>
-        <div class="the-word">${escapeHtml(state.word.d)}</div>
+        <div class="the-word">${escapeHtml(hintWord)}</div>
         <div class="the-hint">A tua única pista. Disfarça.</div>`
       : `
         <div class="role-label">🤫 És o impostor</div>

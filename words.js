@@ -626,6 +626,7 @@ const WORDS = [
   { p: "Ricardo Freire", d: "", c: "Amigos" },
   { p: "Diogo Cunha", d: "", c: "Amigos" },
   { p: "David Ribeiro", d: "", c: "Amigos" },
+  { p: "João Pinto", d: "", c: "Amigos" },
 ];
 
 // Disponibiliza globalmente
