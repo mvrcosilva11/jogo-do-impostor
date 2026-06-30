@@ -656,16 +656,16 @@ const WORDS = [
 
   // ──────────── GRUPO DE AMIGOS (sem pista — só o nome) ──────────────
   // Amigos: a pista é sorteada de cada vez (campo "r") para não decorarem. Rima com a parte indicada.
-  { p: "Diogo Rebelo", c: "Amigos", d: "Martelo", r: ["Martelo","Camelo","Castelo","Novelo","Cabelo","Caramelo","Pesadelo","Chinelo"] },     // rima com Rebelo
-  { p: "David Santos", c: "Amigos", d: "Encantos", r: ["Encantos","Cantos","Mantos","Recantos","Espantos","Tantos"] },                        // rima com Santos
-  { p: "Marco da Silva", c: "Amigos", d: "Barco", r: ["Barco","Charco","Parco","Embarco"] },                                                  // rima com Marco
-  { p: "Nuno Pinto", c: "Amigos", d: "Aluno", r: ["Aluno","Bruno","Jejuno","Oportuno"] },                                                     // rima com Nuno
-  { p: "Vitor Fernandes", c: "Amigos", d: "Motor", r: ["Motor","Leitor","Doutor","Pintor","Reitor","Editor","Monitor","Tutor"] },             // rima com Vitor
-  { p: "Alex Lemos", c: "Amigos", d: "Rolex", r: ["Rolex","Telex","Codex","Index","Látex","Vortex","Duplex"] },                               // rima com Alex
-  { p: "Ricardo Freire", c: "Amigos", d: "Freira", r: ["Freira","Cadeira","Bandeira","Madeira","Fogueira","Poeira","Caldeira","Carteira"] },  // rima com Freire
-  { p: "Diogo Cunha", c: "Amigos", d: "Testemunha", r: ["Testemunha","Punha","Repunha","Compunha"] },                                         // rima com Cunha
-  { p: "David Ribeiro", c: "Amigos", d: "Dinheiro", r: ["Dinheiro","Janeiro","Cruzeiro","Ligeiro","Brasileiro","Marinheiro","Cavaleiro","Nevoeiro","Pasteleiro"] }, // rima com Ribeiro
-  { p: "João Pinto", c: "Amigos", d: "Cinto", r: ["Cinto","Tinto","Quinto","Distinto","Instinto","Recinto","Sucinto","Minto"] },              // rima com Pinto
+  { p: "Diogo Rebelo", c: "Amigos", d: "Martelo", r: ["Martelo","Camelo","Castelo","Novelo","Cabelo","Caramelo","Pesadelo","Chinelo","Cotovelo","Modelo","Duelo","Selo","Farelo"] },     // rima com Rebelo
+  { p: "David Santos", c: "Amigos", d: "Encantos", r: ["Encantos","Cantos","Mantos","Recantos","Espantos","Tantos","Quebrantos","Adiantos","Acalantos"] },                              // rima com Santos
+  { p: "Marco da Silva", c: "Amigos", d: "Barco", r: ["Barco","Charco","Parco","Embarco","Demarco"] },                                                                                  // rima com Marco
+  { p: "Nuno Pinto", c: "Amigos", d: "Aluno", r: ["Aluno","Bruno","Jejuno","Oportuno","Inoportuno","Importuno","Tribuno"] },                                                            // rima com Nuno
+  { p: "Vitor Fernandes", c: "Amigos", d: "Motor", r: ["Motor","Leitor","Doutor","Pintor","Reitor","Editor","Monitor","Tutor","Setor","Vetor","Reator","Inventor","Ator"] },           // rima com Vitor
+  { p: "Alex Lemos", c: "Amigos", d: "Rolex", r: ["Rolex","Telex","Codex","Index","Látex","Vortex","Duplex","Apex","Reflex"] },                                                         // rima com Alex
+  { p: "Ricardo Freire", c: "Amigos", d: "Freira", r: ["Freira","Cadeira","Bandeira","Madeira","Fogueira","Poeira","Caldeira","Carteira","Maneira","Carreira","Ladeira","Fronteira"] }, // rima com Freire
+  { p: "Diogo Cunha", c: "Amigos", d: "Testemunha", r: ["Testemunha","Punha","Repunha","Compunha","Propunha","Supunha","Dispunha","Opunha"] },                                          // rima com Cunha
+  { p: "David Ribeiro", c: "Amigos", d: "Dinheiro", r: ["Dinheiro","Janeiro","Cruzeiro","Ligeiro","Brasileiro","Marinheiro","Cavaleiro","Nevoeiro","Pasteleiro","Bombeiro","Carpinteiro","Prisioneiro","Verdadeiro","Primeiro"] }, // rima com Ribeiro
+  { p: "João Pinto", c: "Amigos", d: "Cinto", r: ["Cinto","Tinto","Quinto","Distinto","Instinto","Recinto","Sucinto","Minto","Indistinto"] },                                          // rima com Pinto
 ];
 
 // Disponibiliza globalmente
