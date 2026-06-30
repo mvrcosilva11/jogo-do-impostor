@@ -620,10 +620,10 @@ const WORDS = [
   { p: "Diogo Rebelo", d: "Martelo", c: "Amigos" },       // rima com Rebelo
   { p: "David Santos", d: "Encantos", c: "Amigos" },      // rima com Santos
   { p: "Marco da Silva", d: "Barco", c: "Amigos" },       // rima com Marco
-  { p: "Nuno Pinto", d: "Tinto", c: "Amigos" },           // rima com Pinto
-  { p: "Vitor Fernandes", d: "Grandes", c: "Amigos" },    // rima com Fernandes
-  { p: "Alex Lemos", d: "Remos", c: "Amigos" },           // rima com Lemos
-  { p: "Ricardo Freire", d: "Dardo", c: "Amigos" },       // rima com Ricardo
+  { p: "Nuno Pinto", d: "Aluno", c: "Amigos" },           // rima com Nuno
+  { p: "Vitor Fernandes", d: "Motor", c: "Amigos" },      // rima com Vitor
+  { p: "Alex Lemos", d: "Rolex", c: "Amigos" },           // rima com Alex
+  { p: "Ricardo Freire", d: "Freira", c: "Amigos" },      // rima com Freire
   { p: "Diogo Cunha", d: "Testemunha", c: "Amigos" },     // rima com Cunha
   { p: "David Ribeiro", d: "Dinheiro", c: "Amigos" },     // rima com Ribeiro
   { p: "João Pinto", d: "Cinto", c: "Amigos" },           // rima com Pinto
