@@ -8,7 +8,7 @@ Jogo de festa para um só telemóvel, passado de mão em mão. Todos recebem uma
 2. Escolher o número de impostores:
    - **Escolher** — até 1/3 dos jogadores (mínimo 1).
    - **Aleatório** — sorteado entre 1 e todos os jogadores.
-3. Cada jogador, à vez, **pressiona e mantém o dedo** no card para ver a sua palavra (ou que é o impostor + dica). Ao largar, esconde. Passa o telemóvel ao próximo.
+3. Cada jogador, à vez, **pressiona e mantém o dedo** no card. Quem não é impostor vê a **palavra**; o impostor vê apenas uma **pista** (uma palavra relacionada, subtil). Ao largar, esconde. Passa o telemóvel ao próximo.
 4. A app diz **quem começa**. Cada um diz uma palavra relacionada; debatam e votem.
 5. **Revelar impostor(es)** no fim. Jogar de novo.
 
@@ -16,7 +16,7 @@ Jogo de festa para um só telemóvel, passado de mão em mão. Todos recebem uma
 
 Animais, Profissões, Plantas, Comida, Lugares, Objetos, Celebridades, Personalidades Portuguesas, Música, Filmes & Séries, Youtubers PT e Brainrot.
 
-Para acrescentar palavras, edita [`words.js`](words.js) — cada linha é `{ p: "palavra", d: "dica subtil", c: "categoria" }`.
+Para acrescentar palavras, edita [`words.js`](words.js) — cada linha é `{ p: "palavra", d: "pista", c: "categoria" }`. A `pista` é uma única palavra relacionada (vista só pelo impostor); deixa `d: ""` para palavras sem pista.
 
 ## Stack
 
