@@ -32,18 +32,23 @@
     return true;
   }
 
-  // Deriva uma pista (uma palavra) a partir da descrição curta da Wikidata.
+  // Deriva uma pista OBLÍQUA (uma palavra) a partir da descrição curta da Wikidata.
+  // Em vez da categoria óbvia (1ª palavra: "futebolista", "cantor"), prefere a ÚLTIMA
+  // palavra significativa — normalmente a origem/nacionalidade ("português", "brasileiro"),
+  // que é uma pista bem mais subtil.
+  const STOP = new Set(["de","da","do","das","dos","e","o","a","os","as","um","uma","no","na",
+    "the","of","and","in","del","la","el"]);
   function pistaFrom(desc, title) {
     if (!desc) return "";
     if (/desambigua|página da wiki/i.test(desc)) return ""; // páginas meta → sem boa pista
     const tlow = title.toLowerCase();
-    const parts = desc.trim().split(/\s+/);
-    // primeira palavra "significativa" que não esteja já no título
-    let w = parts.find((p) => {
-      const clean = p.replace(/[^\p{L}\d]/gu, "");
-      return clean.length >= 3 && !tlow.includes(clean.toLowerCase());
-    });
-    w = (w || parts[0] || "").replace(/[^\p{L}\d]/gu, "");
+    const words = desc.trim().split(/\s+/)
+      .map((p) => p.replace(/[^\p{L}\d]/gu, ""))
+      .filter((p) => p.length >= 3 && !STOP.has(p.toLowerCase()));
+    // candidatas que não aparecem no próprio título
+    const cand = words.filter((p) => !tlow.includes(p.toLowerCase()));
+    const list = cand.length ? cand : words;
+    const w = list.length ? list[list.length - 1] : ""; // última = origem/nacionalidade
     if (w.length < 3) return "";
     return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
   }
