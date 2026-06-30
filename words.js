@@ -617,16 +617,16 @@ const WORDS = [
   { p: "Escachar", d: "Gargalhada", c: "Slang PT" },
 
   // ──────────── GRUPO DE AMIGOS (sem pista — só o nome) ──────────────
-  { p: "Diogo Rebelo", d: "Revolta", c: "Amigos" },     // Rebelo → rebelde
-  { p: "David Santos", d: "Auréola", c: "Amigos" },     // Santos → santo
-  { p: "Marco da Silva", d: "Polo", c: "Amigos" },      // Marco → Marco Polo
-  { p: "Nuno Pinto", d: "Ovo", c: "Amigos" },           // Pinto → pintainho
-  { p: "Vitor Fernandes", d: "Pódio", c: "Amigos" },    // Vitor → vitória
-  { p: "Alex Lemos", d: "Alexa", c: "Amigos" },         // Alex → Alexa
-  { p: "Ricardo Freire", d: "Convento", c: "Amigos" },  // Freire → frade
-  { p: "Diogo Cunha", d: "Encaixe", c: "Amigos" },      // Cunha → cunha/calço
-  { p: "David Ribeiro", d: "Truta", c: "Amigos" },      // Ribeiro → riacho
-  { p: "João Pinto", d: "Penugem", c: "Amigos" },       // Pinto → pinto/ave
+  { p: "Diogo Rebelo", d: "Martelo", c: "Amigos" },       // rima com Rebelo
+  { p: "David Santos", d: "Encantos", c: "Amigos" },      // rima com Santos
+  { p: "Marco da Silva", d: "Barco", c: "Amigos" },       // rima com Marco
+  { p: "Nuno Pinto", d: "Tinto", c: "Amigos" },           // rima com Pinto
+  { p: "Vitor Fernandes", d: "Grandes", c: "Amigos" },    // rima com Fernandes
+  { p: "Alex Lemos", d: "Remos", c: "Amigos" },           // rima com Lemos
+  { p: "Ricardo Freire", d: "Dardo", c: "Amigos" },       // rima com Ricardo
+  { p: "Diogo Cunha", d: "Testemunha", c: "Amigos" },     // rima com Cunha
+  { p: "David Ribeiro", d: "Dinheiro", c: "Amigos" },     // rima com Ribeiro
+  { p: "João Pinto", d: "Cinto", c: "Amigos" },           // rima com Pinto
 ];
 
 // Disponibiliza globalmente
