@@ -37,6 +37,53 @@ function maxImpostorsManual(n) {
   return Math.max(1, Math.floor(n / 3)); // até 1/3, no mínimo 1
 }
 
+// ─────────────────── PALAVRAS DE ATUALIDADE (online) ───────────────────
+function mergeTrending(extra) {
+  if (!extra || !extra.length) return 0;
+  const have = new Set(WORDS.map((w) => w.p.toLowerCase()));
+  let added = 0;
+  extra.forEach((w) => {
+    if (w && w.p && w.d && !have.has(w.p.toLowerCase())) {
+      WORDS.push(w);
+      have.add(w.p.toLowerCase());
+      added++;
+    }
+  });
+  return added;
+}
+
+function setTrendStatus(text, busy) {
+  const el = document.getElementById("trend-status");
+  if (!el) return;
+  el.textContent = text;
+  el.classList.toggle("busy", !!busy);
+}
+
+let trendingCount = 0; // quantas palavras de atualidade estão no pool
+
+async function refreshTrending(force) {
+  if (!window.loadTrendingWords) { setTrendStatus(""); return; }
+  setTrendStatus("🔥 A procurar palavras de atualidade…", true);
+  try {
+    const extra = await window.loadTrendingWords(force);
+    // remove as antigas de atualidade antes de juntar as novas (evita acumular)
+    if (force) {
+      for (let i = WORDS.length - 1; i >= 0; i--) {
+        if (WORDS[i].c && WORDS[i].c.indexOf("Atualidade") === 0) WORDS.splice(i, 1);
+      }
+    }
+    mergeTrending(extra);
+    trendingCount = WORDS.filter((w) => w.c && w.c.indexOf("Atualidade") === 0).length;
+    setTrendStatus(
+      trendingCount
+        ? `🔥 ${trendingCount} palavras de atualidade · tocar para atualizar`
+        : "🔥 Sem ligação — a usar o banco fixo"
+    );
+  } catch (e) {
+    setTrendStatus("🔥 Sem ligação — a usar o banco fixo");
+  }
+}
+
 // ─────────────────────────── ECRÃ: JOGADORES ───────────────────────────
 function renderPlayers() {
   const list = $("#players-list");
@@ -277,6 +324,11 @@ function init() {
   // Resultado
   $("#btn-new-game").addEventListener("click", newGame);
   $("#btn-same-players").addEventListener("click", replaySamePlayers);
+
+  // Palavras de atualidade: carregar ao abrir; tocar no estado força atualização
+  const trend = $("#trend-status");
+  if (trend) trend.addEventListener("click", () => refreshTrending(true));
+  refreshTrending(false);
 }
 
 document.addEventListener("DOMContentLoaded", init);

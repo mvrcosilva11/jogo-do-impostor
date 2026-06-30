@@ -92,6 +92,14 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .btn-pink { background: var(--pink); color: var(--ink); }
 .btn-ghost { background: transparent; border: 2px solid #00000018; color: var(--ink); }
 
+.trend-status {
+  display: block; width: 100%; margin-top: 12px; padding: 6px;
+  background: none; border: none; font-family: inherit; cursor: pointer;
+  text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--muted);
+  letter-spacing: 0.2px;
+}
+.trend-status.busy { opacity: 0.6; }
+
 .topbar { display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; }
 .btn-back {
   background: #fff; border: none; color: var(--ink);
