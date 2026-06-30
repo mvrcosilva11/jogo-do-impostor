@@ -617,16 +617,16 @@ const WORDS = [
   { p: "Escachar", d: "Gargalhada", c: "Slang PT" },
 
   // ──────────── GRUPO DE AMIGOS (sem pista — só o nome) ──────────────
-  { p: "Diogo Rebelo", d: "", c: "Amigos" },
-  { p: "David Santos", d: "", c: "Amigos" },
-  { p: "Marco da Silva", d: "", c: "Amigos" },
-  { p: "Nuno Pinto", d: "", c: "Amigos" },
-  { p: "Vitor Fernandes", d: "", c: "Amigos" },
-  { p: "Alex Lemos", d: "", c: "Amigos" },
-  { p: "Ricardo Freire", d: "", c: "Amigos" },
-  { p: "Diogo Cunha", d: "", c: "Amigos" },
-  { p: "David Ribeiro", d: "", c: "Amigos" },
-  { p: "João Pinto", d: "", c: "Amigos" },
+  { p: "Diogo Rebelo", d: "Revolta", c: "Amigos" },     // Rebelo → rebelde
+  { p: "David Santos", d: "Auréola", c: "Amigos" },     // Santos → santo
+  { p: "Marco da Silva", d: "Polo", c: "Amigos" },      // Marco → Marco Polo
+  { p: "Nuno Pinto", d: "Ovo", c: "Amigos" },           // Pinto → pintainho
+  { p: "Vitor Fernandes", d: "Pódio", c: "Amigos" },    // Vitor → vitória
+  { p: "Alex Lemos", d: "Alexa", c: "Amigos" },         // Alex → Alexa
+  { p: "Ricardo Freire", d: "Convento", c: "Amigos" },  // Freire → frade
+  { p: "Diogo Cunha", d: "Encaixe", c: "Amigos" },      // Cunha → cunha/calço
+  { p: "David Ribeiro", d: "Truta", c: "Amigos" },      // Ribeiro → riacho
+  { p: "João Pinto", d: "Penugem", c: "Amigos" },       // Pinto → pinto/ave
 ];
 
 // Disponibiliza globalmente
