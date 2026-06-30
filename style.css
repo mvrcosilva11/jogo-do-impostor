@@ -138,6 +138,31 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .counter-btn[disabled] { opacity: 0.35; }
 .counter-value { font-size: 4rem; font-weight: 850; min-width: 80px; text-align: center; letter-spacing: -2px; }
 
+/* ── Toggle (switch) ── */
+.switch-row {
+  display: flex; align-items: center; gap: 14px; justify-content: space-between;
+  background: #fff; border-radius: 18px; padding: 16px 18px; margin-top: 22px;
+  box-shadow: var(--shadow); cursor: pointer;
+}
+.switch-title { font-size: 1rem; font-weight: 800; }
+.switch-sub { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-top: 3px; max-width: 250px; }
+.switch { flex-shrink: 0; width: 52px; height: 30px; border-radius: 999px; background: #d6d6d6; position: relative; transition: background 0.2s ease; }
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+.switch-row.on .switch { background: var(--ink); }
+.switch-row.on .switch .knob { transform: translateX(22px); }
+
+/* ── Caixa de escrita (modo personalizado) ── */
+.card-static { transform: none !important; }
+.write-instruction { color: #00000088; font-size: 0.98rem; font-weight: 600; line-height: 1.4; max-width: 300px; margin-bottom: 18px; }
+.write-box {
+  width: 86%; background: #00000010; border: 2px solid #00000018; border-radius: 14px;
+  padding: 15px 16px; font-size: 1.3rem; font-weight: 800; font-family: inherit; color: var(--ink);
+  text-align: center;
+}
+.write-box:focus { outline: none; border-color: var(--ink); background: #fff; }
+.write-box.shake { animation: shake 0.4s; border-color: #ff3860; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px);} 75%{transform:translateX(7px);} }
+
 .big-card { border-radius: var(--radius); padding: 34px 26px; text-align: center; margin-top: 8px; }
 .big-card .dice { font-size: 3.5rem; margin-bottom: 12px; }
 .big-card p { color: #00000099; font-weight: 700; line-height: 1.5; font-size: 1.05rem; }

@@ -10,6 +10,10 @@ const state = {
   revealIndex: 0,
   starter: null,
   usedWords: new Set(), // palavras já saídas nesta sessão (não repetir)
+  customMode: false,    // palavra escrita por um jogador
+  masterIndex: -1,      // jogador que escreve (não-impostor, secreto)
+  writeIndex: 0,
+  customWord: "",
 };
 
 // Escolhe a palavra: 50/50 entre ATUALIDADE e BANCO (probabilidade igual),
@@ -170,6 +174,12 @@ function setupImpostorScreen() {
   state.impostorCount = Math.min(state.impostorCount, maxImpostorsManual(n));
   if (state.impostorCount < 1) state.impostorCount = 1;
   updateCounter();
+
+  // refletir o estado do modo personalizado no toggle e no botão
+  const ct = document.getElementById("custom-toggle");
+  if (ct) ct.classList.toggle("on", state.customMode);
+  const btn = document.getElementById("btn-impostors-next");
+  if (btn) btn.textContent = state.customMode ? "Escrever palavra →" : "Distribuir cartas →";
 }
 
 function updateCounter() {
@@ -198,9 +208,8 @@ function assignRoles() {
   } else {
     count = Math.min(state.impostorCount, maxImpostorsManual(n));
   }
-
-  // escolher palavra (50/50 atualidade/banco, sem repetir na sessão)
-  state.word = pickWord();
+  // no modo personalizado tem de sobrar pelo menos um não-impostor (o Mestre)
+  if (state.customMode && count >= n) count = n - 1;
 
   // escolher quais jogadores são impostores
   const idxs = shuffle(names.map((_, i) => i)).slice(0, count);
@@ -208,14 +217,81 @@ function assignRoles() {
 
   state.roles = names.map((name, i) => ({ name, isImpostor: impostorSet.has(i), hint: null }));
 
-  // Caso especial: TODOS são impostores → cada um recebe uma pista aleatória e DIFERENTE
-  // (não há palavra comum, por isso as pistas são independentes entre si).
-  if (count === names.length) {
-    const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
-    state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
+  if (state.customMode) {
+    // Mestre: um não-impostor à sorte (escreve a palavra na 1ª passagem)
+    const nonImp = state.roles.map((_, i) => i).filter((i) => !impostorSet.has(i));
+    state.masterIndex = nonImp[Math.floor(Math.random() * nonImp.length)];
+    state.word = null;       // será escrita
+    state.customWord = "";
+    state.writeIndex = 0;
+  } else {
+    state.masterIndex = -1;
+    // escolher palavra (50/50 atualidade/banco, sem repetir na sessão)
+    state.word = pickWord();
+    // Caso especial: TODOS são impostores → cada um recebe pista aleatória e DIFERENTE
+    if (count === names.length) {
+      const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
+      state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
+    }
   }
 
   state.revealIndex = 0;
+}
+
+// Inicia a distribuição: escrita (modo personalizado) ou revelação direta.
+function startDistribution() {
+  assignRoles();
+  if (state.customMode) {
+    renderWriteCard();
+    showScreen("screen-write");
+  } else {
+    renderRevealCard();
+    showScreen("screen-reveal");
+  }
+}
+
+// ───────────────────── ECRÃ: ESCRITA (modo personalizado) ──────────────
+function renderWriteCard() {
+  const role = state.roles[state.writeIndex];
+  $("#write-index").textContent = state.writeIndex + 1;
+  $("#write-total").textContent = state.roles.length;
+  $("#write-name").textContent = role.name;
+
+  const isMaster = state.writeIndex === state.masterIndex;
+  $("#write-instruction").textContent = isMaster
+    ? "🎯 És tu a escolher! Escreve a palavra da ronda — ninguém saberá que foste tu."
+    : "Escreve uma palavra qualquer. É só disfarce — não conta.";
+  const input = $("#write-input");
+  input.value = "";
+  input.placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";
+
+  const last = state.writeIndex === state.roles.length - 1;
+  $("#btn-write-next").textContent = last ? "Ver as cartas →" : "Próximo jogador →";
+  setTimeout(() => input.focus(), 60);
+}
+
+function writeNext() {
+  const input = $("#write-input");
+  const val = input.value.trim();
+  // toda a gente escreve algo (disfarça quem é o Mestre)
+  if (!val) {
+    input.classList.add("shake");
+    setTimeout(() => input.classList.remove("shake"), 420);
+    input.focus();
+    return;
+  }
+  if (state.writeIndex === state.masterIndex) state.customWord = val;
+
+  if (state.writeIndex < state.roles.length - 1) {
+    state.writeIndex++;
+    renderWriteCard();
+  } else {
+    // escrita terminada → palavra da ronda (sem pista) e passar à revelação
+    state.word = { p: state.customWord, d: "", c: "Personalizada" };
+    state.revealIndex = 0;
+    renderRevealCard();
+    showScreen("screen-reveal");
+  }
 }
 
 // ─────────────────────────── ECRÃ: REVELAÇÃO ───────────────────────────
@@ -309,9 +385,7 @@ function newGame() {
 }
 
 function replaySamePlayers() {
-  assignRoles();
-  renderRevealCard();
-  showScreen("screen-reveal");
+  startDistribution();
 }
 
 // ─────────────────────────── LIGAÇÕES (EVENTOS) ────────────────────────
@@ -351,11 +425,21 @@ function init() {
       state.impostorCount++; updateCounter();
     }
   });
-  $("#btn-impostors-next").addEventListener("click", () => {
-    assignRoles();
-    renderRevealCard();
-    showScreen("screen-reveal");
-  });
+  $("#btn-impostors-next").addEventListener("click", startDistribution);
+
+  // Toggle do modo "palavra escrita por um jogador"
+  const customToggle = $("#custom-toggle");
+  if (customToggle) {
+    customToggle.addEventListener("click", () => {
+      state.customMode = !state.customMode;
+      customToggle.classList.toggle("on", state.customMode);
+      $("#btn-impostors-next").textContent = state.customMode ? "Escrever palavra →" : "Distribuir cartas →";
+    });
+  }
+
+  // Escrita (modo personalizado)
+  $("#btn-write-next").addEventListener("click", writeNext);
+  $("#write-input").addEventListener("keydown", (e) => { if (e.key === "Enter") writeNext(); });
 
   // Revelação
   bindHoldToReveal();
