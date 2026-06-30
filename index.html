@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f0f1a" />
+  <title>Jogo do Impostor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main id="app">
+
+    <!-- ECRÃ: INÍCIO -->
+    <section class="screen active" id="screen-home">
+      <div class="hero">
+        <div class="logo">🕵️</div>
+        <h1>Jogo do <span class="accent">Impostor</span></h1>
+        <p class="subtitle">Descobre quem não sabe a palavra.</p>
+      </div>
+      <button class="btn btn-primary btn-big" id="btn-start">Iniciar jogo</button>
+      <p class="hint-text">Joga-se num só telemóvel, passado de mão em mão.</p>
+    </section>
+
+    <!-- ECRÃ: JOGADORES -->
+    <section class="screen" id="screen-players">
+      <header class="topbar">
+        <button class="btn-back" data-goto="screen-home">‹</button>
+        <h2>Jogadores</h2>
+      </header>
+      <p class="muted">Adiciona os nomes (mínimo 3).</p>
+      <div id="players-list" class="players-list"></div>
+      <button class="btn btn-ghost" id="btn-add-player">+ Adicionar jogador</button>
+      <div class="spacer"></div>
+      <button class="btn btn-primary btn-big" id="btn-players-next">Continuar</button>
+    </section>
+
+    <!-- ECRÃ: IMPOSTORES -->
+    <section class="screen" id="screen-impostors">
+      <header class="topbar">
+        <button class="btn-back" data-goto="screen-players">‹</button>
+        <h2>Impostores</h2>
+      </header>
+      <p class="muted"><span id="total-players">0</span> jogadores nesta partida.</p>
+
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="manual">Escolher</button>
+        <button class="mode-btn" data-mode="random">Aleatório</button>
+      </div>
+
+      <div id="manual-box">
+        <div class="counter">
+          <button class="counter-btn" id="imp-minus">−</button>
+          <div class="counter-value"><span id="imp-count">1</span></div>
+          <button class="counter-btn" id="imp-plus">+</button>
+        </div>
+        <p class="muted center">Máximo <span id="imp-max">1</span> (até 1/3 dos jogadores).</p>
+      </div>
+
+      <div id="random-box" class="hidden">
+        <div class="random-card">
+          <div class="dice">🎲</div>
+          <p>O número de impostores será sorteado — pode calhar de <strong>1 a <span id="rand-max">0</span></strong>.</p>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn-primary btn-big" id="btn-impostors-next">Distribuir cartas</button>
+    </section>
+
+    <!-- ECRÃ: REVELAÇÃO (CARDS) -->
+    <section class="screen" id="screen-reveal">
+      <div class="reveal-progress"><span id="reveal-index">1</span> / <span id="reveal-total">0</span></div>
+      <div class="card" id="reveal-card">
+        <div class="card-face card-front">
+          <div class="card-name" id="card-name">Nome</div>
+          <div class="card-instruction">
+            <span class="finger">👆</span>
+            Pressiona e mantém para ver
+          </div>
+        </div>
+        <div class="card-face card-back" id="card-back">
+          <!-- preenchido dinamicamente -->
+        </div>
+      </div>
+      <button class="btn btn-primary btn-big" id="btn-next-player">Próximo jogador</button>
+    </section>
+
+    <!-- ECRÃ: JOGO A DECORRER -->
+    <section class="screen" id="screen-play">
+      <div class="play-content">
+        <p class="muted">Começa a dizer a palavra:</p>
+        <div class="starter" id="starter-name">—</div>
+        <p class="hint-text">Cada jogador diz uma palavra relacionada. Debatam e votem em quem acham que é o impostor.</p>
+      </div>
+      <button class="btn btn-danger btn-big" id="btn-reveal-impostor">Revelar impostor(es)</button>
+    </section>
+
+    <!-- ECRÃ: RESULTADO -->
+    <section class="screen" id="screen-result">
+      <div class="result-content">
+        <p class="muted">A palavra era:</p>
+        <div class="result-word" id="result-word">—</div>
+        <p class="muted top-gap">Impostor(es):</p>
+        <div class="impostor-reveal" id="impostor-names"></div>
+      </div>
+      <button class="btn btn-primary btn-big" id="btn-new-game">Novo jogo</button>
+      <button class="btn btn-ghost" id="btn-same-players">Repetir com os mesmos jogadores</button>
+    </section>
+
+  </main>
+
+  <script src="words.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

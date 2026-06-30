@@ -1,0 +1,182 @@
+:root {
+  --bg: #0f0f1a;
+  --bg-soft: #1a1a2e;
+  --card: #20203a;
+  --accent: #ff5470;
+  --accent-2: #7b6cff;
+  --text: #f3f3fb;
+  --muted: #9a9ab5;
+  --good: #2ecc71;
+  --radius: 22px;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: radial-gradient(120% 120% at 50% 0%, #1c1c33 0%, var(--bg) 60%);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  overscroll-behavior: none;
+}
+
+body { -webkit-user-select: none; user-select: none; }
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  position: relative;
+}
+
+/* ── Ecrãs ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding: 28px 0 24px;
+  animation: fade 0.3s ease;
+}
+.screen.active { display: flex; }
+@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.spacer { flex: 1; }
+.hidden { display: none !important; }
+.center { text-align: center; }
+.top-gap { margin-top: 26px; }
+
+/* ── Tipografia ── */
+h1 { font-size: 2.4rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.5px; }
+h2 { font-size: 1.4rem; font-weight: 700; }
+.accent { color: var(--accent); }
+.subtitle { color: var(--muted); margin-top: 10px; font-size: 1.05rem; }
+.muted { color: var(--muted); font-size: 0.98rem; margin: 6px 0 14px; }
+.hint-text { color: var(--muted); font-size: 0.85rem; text-align: center; margin-top: 16px; }
+
+/* ── Início ── */
+.hero { text-align: center; margin: auto 0 30px; }
+.logo { font-size: 4.5rem; margin-bottom: 14px; }
+
+/* ── Botões ── */
+.btn {
+  border: none;
+  border-radius: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.08s ease, opacity 0.2s ease;
+  color: var(--text);
+}
+.btn:active { transform: scale(0.97); }
+.btn[disabled] { opacity: 0.4; pointer-events: none; }
+.btn-big { width: 100%; padding: 18px; font-size: 1.15rem; margin-top: 10px; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow); }
+.btn-danger { background: linear-gradient(135deg, #ff3860, #ff7a45); box-shadow: var(--shadow); }
+.btn-ghost { background: transparent; border: 1.5px solid #ffffff22; color: var(--text); }
+
+.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.btn-back {
+  background: #ffffff14; border: none; color: var(--text);
+  width: 40px; height: 40px; border-radius: 12px; font-size: 1.6rem; cursor: pointer;
+  line-height: 1; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Lista de jogadores ── */
+.players-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.player-row { display: flex; gap: 8px; align-items: center; }
+.player-row input {
+  flex: 1;
+  background: var(--card);
+  border: 1.5px solid #ffffff14;
+  border-radius: 14px;
+  padding: 15px 16px;
+  color: var(--text);
+  font-size: 1.05rem;
+  font-family: inherit;
+}
+.player-row input:focus { outline: none; border-color: var(--accent-2); }
+.player-row .remove {
+  background: #ffffff10; border: none; color: var(--muted);
+  width: 46px; height: 46px; border-radius: 12px; font-size: 1.3rem; cursor: pointer; flex-shrink: 0;
+}
+
+/* ── Impostores ── */
+.mode-toggle {
+  display: flex; background: var(--card); border-radius: 16px; padding: 5px; margin: 8px 0 24px;
+}
+.mode-btn {
+  flex: 1; background: transparent; border: none; color: var(--muted);
+  padding: 13px; border-radius: 12px; font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+}
+.mode-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+
+.counter { display: flex; align-items: center; justify-content: center; gap: 26px; margin: 30px 0 10px; }
+.counter-btn {
+  width: 64px; height: 64px; border-radius: 50%; border: none;
+  background: var(--card); color: var(--text); font-size: 2rem; cursor: pointer; font-weight: 700;
+}
+.counter-btn:active { transform: scale(0.92); }
+.counter-value { font-size: 3.5rem; font-weight: 800; min-width: 70px; text-align: center; }
+
+.random-card {
+  background: var(--card); border-radius: var(--radius); padding: 30px 24px; text-align: center; margin-top: 20px;
+}
+.random-card .dice { font-size: 3.5rem; margin-bottom: 12px; }
+.random-card p { color: var(--muted); line-height: 1.5; }
+.random-card strong { color: var(--text); }
+
+/* ── Card de revelação ── */
+.reveal-progress { text-align: center; color: var(--muted); font-weight: 700; margin-bottom: 14px; font-size: 1.1rem; }
+
+.card {
+  flex: 1;
+  position: relative;
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  min-height: 360px;
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.card.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position: absolute; inset: 0;
+  border-radius: var(--radius);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 30px;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: var(--shadow);
+}
+.card-front { background: linear-gradient(160deg, #2a2a4d, #1c1c33); border: 1.5px solid #ffffff10; }
+.card-back { background: linear-gradient(160deg, var(--accent-2), var(--accent)); transform: rotateY(180deg); }
+
+.card-name { font-size: 2.2rem; font-weight: 800; margin-bottom: 22px; }
+.card-instruction { color: var(--muted); font-size: 1.05rem; display: flex; flex-direction: column; gap: 8px; }
+.finger { font-size: 2.4rem; animation: tap 1.3s infinite; }
+@keyframes tap { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+
+/* conteúdo do verso */
+.role-label { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.85; margin-bottom: 10px; }
+.the-word { font-size: 2.6rem; font-weight: 800; line-height: 1.1; margin-bottom: 18px; }
+.the-impostor { font-size: 2.4rem; font-weight: 800; margin-bottom: 18px; }
+.the-hint { font-size: 1.15rem; font-style: italic; line-height: 1.45; opacity: 0.95; max-width: 320px; }
+.the-category { margin-top: 16px; font-size: 0.85rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 1.5px; }
+
+/* ── Jogo / Resultado ── */
+.play-content, .result-content { margin: auto 0; text-align: center; }
+.starter {
+  font-size: 2.8rem; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 6px 0 18px;
+}
+.result-word { font-size: 2.6rem; font-weight: 800; margin: 4px 0; }
+.impostor-reveal { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.impostor-reveal .imp {
+  background: linear-gradient(135deg, #ff3860, #ff7a45);
+  padding: 14px; border-radius: 14px; font-size: 1.3rem; font-weight: 800; box-shadow: var(--shadow);
+}
