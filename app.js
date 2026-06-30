@@ -38,6 +38,10 @@ function pickWord() {
   }
   const w = pool[Math.floor(Math.random() * pool.length)];
   used.add(w.p);
+  // se a palavra tiver várias rimas (amigos), sorteia uma de cada vez (não decoram)
+  if (w.r && w.r.length) {
+    return { p: w.p, c: w.c, d: w.r[Math.floor(Math.random() * w.r.length)] };
+  }
   return w;
 }
 
