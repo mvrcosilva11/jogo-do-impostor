@@ -137,16 +137,23 @@ function renderRevealCard() {
   $("#card-name").textContent = role.name;
 
   const back = $("#card-back");
+  const hasHint = !!(state.word.d && state.word.d.trim());
   if (role.isImpostor) {
+    const hint = hasHint
+      ? `<div class="the-hint">Dica: ${escapeHtml(state.word.d)}</div>`
+      : `<div class="the-hint">Sem dica desta vez — desenrasca-te! 😅</div>`;
     back.innerHTML = `
       <div class="role-label">A tua palavra</div>
       <div class="the-impostor">🤫 És o impostor</div>
-      <div class="the-hint">Dica: ${escapeHtml(state.word.d)}</div>`;
+      ${hint}`;
   } else {
+    const hint = hasHint
+      ? `<div class="the-hint">Dica: ${escapeHtml(state.word.d)}</div>`
+      : "";
     back.innerHTML = `
       <div class="role-label">A tua palavra</div>
       <div class="the-word">${escapeHtml(state.word.p)}</div>
-      <div class="the-hint">Dica: ${escapeHtml(state.word.d)}</div>`;
+      ${hint}`;
   }
 
   // botão final muda no último jogador

@@ -182,6 +182,79 @@ const WORDS = [
   { p: "Tung Tung Sahur", d: "Bate como tambor antes do nascer do sol.", c: "Brainrot" },
   { p: "Aura", d: "Ganha-se em pontos por cada coisa fixe que fazes.", c: "Brainrot" },
   { p: "Gooning", d: "Versão exagerada de perder horas em algo.", c: "Brainrot" },
+
+  // ───────────────────────────── PORTUGAL ────────────────────────────
+  { p: "Fado", d: "Canta-se a sofrer e ainda se aplaude.", c: "Portugal" },
+  { p: "Azulejo", d: "Cobre paredes e conta histórias em azul.", c: "Portugal" },
+  { p: "Saudade", d: "Dizem que não tem tradução noutra língua.", c: "Portugal" },
+  { p: "Galo de Barcelos", d: "Cantou depois de morto para provar inocência.", c: "Portugal" },
+  { p: "25 de Abril", d: "Nesse dia, as flores saíram à rua.", c: "Portugal" },
+  { p: "Torre de Belém", d: "Guarda a entrada do rio há séculos.", c: "Portugal" },
+  { p: "Cristo Rei", d: "De braços abertos, vigia a capital do outro lado.", c: "Portugal" },
+  { p: "Eléctrico 28", d: "Sobe colinas cheio de turistas e carteiristas.", c: "Portugal" },
+  { p: "Vinho do Porto", d: "Doce, e leva o nome de uma cidade.", c: "Portugal" },
+  { p: "Tejo", d: "Atravessa a capital antes de chegar ao mar.", c: "Portugal" },
+  { p: "Rancho Folclórico", d: "Roda em saias rodadas nas festas da terra.", c: "Portugal" },
+
+  // ───────────────────────────── FUTEBOL ─────────────────────────────
+  { p: "Benfica", d: "Tem uma águia e diz ter mais sócios que ninguém.", c: "Futebol" },
+  { p: "Sporting", d: "O leão de Alvalade.", c: "Futebol" },
+  { p: "FC Porto", d: "O dragão azul e branco do Norte.", c: "Futebol" },
+  { p: "Penálti", d: "Onze metros de pura tensão.", c: "Futebol" },
+  { p: "VAR", d: "Vê o que o árbitro não viu.", c: "Futebol" },
+  { p: "Hat-trick", d: "Três numa noite levam a bola para casa.", c: "Futebol" },
+  { p: "Árbitro", d: "Apita e quase nunca agrada.", c: "Futebol" },
+  { p: "Seleção", d: "Veste-se de vermelho no verão dos grandes torneios.", c: "Futebol" },
+  { p: "Golo", d: "O grito que o estádio inteiro espera.", c: "Futebol" },
+  { p: "Luís Figo", d: "Trocou de lado e nunca o perdoaram.", c: "Futebol" },
+  { p: "Pauleta", d: "Festejava a fazer uma ave com as mãos.", c: "Futebol" },
+  { p: "Cartão Vermelho", d: "Mostra-se e a conversa acaba ali.", c: "Futebol" },
+
+  // ───────────────────────────── DROGAS ──────────────────────────────
+  { p: "Cocaína", d: "Pó branco que acelera tudo.", c: "Drogas" },
+  { p: "Heroína", d: "Também é o feminino de quem salva o dia.", c: "Drogas" },
+  { p: "Ecstasy", d: "A pílula das pistas de dança.", c: "Drogas" },
+  { p: "LSD", d: "Três letras que distorcem o que vês.", c: "Drogas" },
+  { p: "Cogumelos", d: "Nem todos vão para cima da pizza.", c: "Drogas" },
+  { p: "MDMA", d: "Faz o coração das festas eletrónicas bater mais.", c: "Drogas" },
+  { p: "Ketamina", d: "Começou no consultório do veterinário.", c: "Drogas" },
+  { p: "Anfetaminas", d: "Mantêm acordado quem já devia dormir.", c: "Drogas" },
+
+  // ────────────────────────────── WEED ───────────────────────────────
+  { p: "Ganza", d: "Deixa o tempo a passar mais devagar.", c: "Weed" },
+  { p: "Charro", d: "Enrola-se à mão e passa-se à volta.", c: "Weed" },
+  { p: "Erva", d: "Verde, mas não é para regar no jardim.", c: "Weed" },
+  { p: "Liamba", d: "Nome antigo para a mesma planta.", c: "Weed" },
+  { p: "Beck", d: "Pequeno, mas chega para o efeito.", c: "Weed" },
+  { p: "THC", d: "A letra responsável pela moca.", c: "Weed" },
+  { p: "Grinder", d: "Mói antes de se enrolar.", c: "Weed" },
+  { p: "Bong", d: "A água filtra antes de chegar.", c: "Weed" },
+  { p: "Munchies", d: "A fome que ataca de repente.", c: "Weed" },
+
+  // ──────────────────────── SLANG PORTUGUÊS ──────────────────────────
+  { p: "Fixe", d: "Aprovação em duas sílabas.", c: "Slang PT" },
+  { p: "Bué", d: "Quer dizer muito, à moda nova.", c: "Slang PT" },
+  { p: "Cota", d: "Tratamento para quem já tem uns anos.", c: "Slang PT" },
+  { p: "Bazar", d: "Ordem para ir embora.", c: "Slang PT" },
+  { p: "Gajo", d: "Maneira informal de dizer tipo.", c: "Slang PT" },
+  { p: "Piela", d: "O resultado de copos a mais.", c: "Slang PT" },
+  { p: "Cromo", d: "Certinho demais para ser fixe.", c: "Slang PT" },
+  { p: "Marado", d: "Não bate lá muito bem da cabeça.", c: "Slang PT" },
+  { p: "Curtir", d: "Aproveitar sem pressas.", c: "Slang PT" },
+  { p: "Tasca", d: "Come-se bem e barato, sem luxos.", c: "Slang PT" },
+  { p: "Cusco", d: "Mete o nariz na vida dos outros.", c: "Slang PT" },
+  { p: "Ganda", d: "Serve para engrandecer o que vem a seguir.", c: "Slang PT" },
+
+  // ──────────── GRUPO DE AMIGOS (sem dica — só o nome) ───────────────
+  { p: "Rebelo", d: "", c: "Amigos" },
+  { p: "Santos", d: "", c: "Amigos" },
+  { p: "Marco", d: "", c: "Amigos" },
+  { p: "Nuno", d: "", c: "Amigos" },
+  { p: "Vitor", d: "", c: "Amigos" },
+  { p: "Alex", d: "", c: "Amigos" },
+  { p: "Freire", d: "", c: "Amigos" },
+  { p: "Cunha", d: "", c: "Amigos" },
+  { p: "Ribeiro", d: "", c: "Amigos" },
 ];
 
 // Disponibiliza globalmente
