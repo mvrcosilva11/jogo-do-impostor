@@ -136,7 +136,13 @@ function renderRevealCard() {
   $("#reveal-total").textContent = state.roles.length;
   $("#card-name").textContent = role.name;
 
+  // cor rotativa no card frontal de cada jogador
+  const palette = ["#ffe14d", "#c9a3ff", "#f7a8d8", "#b8e6c8", "#9bc4ff", "#ffb86b"];
+  const front = document.querySelector("#reveal-card .card-front");
+  if (front) front.style.background = palette[state.revealIndex % palette.length];
+
   const back = $("#card-back");
+  back.className = "card-face card-back " + (role.isImpostor ? "is-impostor" : "is-word");
   const hasHint = !!(state.word.d && state.word.d.trim());
   if (role.isImpostor) {
     back.innerHTML = hasHint
