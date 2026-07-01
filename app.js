@@ -75,12 +75,12 @@ function maxImpostorsManual(n) {
   return Math.max(1, Math.floor(n / 3)); // até 1/3, no mínimo 1
 }
 
-// Nº de impostores no modo aleatório: favorece 1, decresce até "todos" (o mais raro).
-// Peso de k impostores = (n - k + 1)^2 → ex. n=5: 45% / 29% / 16% / 7% / 2%.
+// Nº de impostores no modo aleatório: favorece 1, decresce até "todos" (o mais raro,
+// mas não residual). Peso linear = (n - k + 1) → ex. n=5: 33% / 27% / 20% / 13% / 7%.
 function weightedImpostorCount(n) {
   const weights = [];
   let total = 0;
-  for (let k = 1; k <= n; k++) { const w = (n - k + 1) * (n - k + 1); weights.push(w); total += w; }
+  for (let k = 1; k <= n; k++) { const w = n - k + 1; weights.push(w); total += w; }
   let r = Math.random() * total;
   for (let k = 1; k <= n; k++) { r -= weights[k - 1]; if (r < 0) return k; }
   return n;
