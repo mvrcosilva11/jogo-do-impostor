@@ -28,12 +28,12 @@ body { -webkit-user-select: none; user-select: none; }
 #app {
   max-width: 460px;
   margin: 0 auto;
-  min-height: 100dvh;
-  padding: calc(env(safe-area-inset-top) + 18px) 20px calc(env(safe-area-inset-bottom) + 18px);
+  height: 100dvh;
+  padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 10px);
 }
 
 /* ── Ecrãs ── */
-.screen { display: none; flex-direction: column; min-height: 100dvh; animation: fade 0.28s ease; }
+.screen { display: none; flex-direction: column; height: 100%; animation: fade 0.28s ease; }
 .screen.active { display: flex; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .spacer { flex: 1; }
@@ -52,19 +52,20 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 
 /* ── Início ── */
 .home-top { margin-bottom: 6px; }
-.hero { margin: 4px 0 22px; }
+.hero { margin: clamp(2px, 1vh, 8px) 0 clamp(12px, 3vh, 22px); }
 .big-title {
-  font-size: 4.4rem; font-weight: 850; line-height: 0.92; letter-spacing: -2px;
+  font-size: clamp(2.6rem, 12vw, 4.4rem); font-weight: 850; line-height: 0.92; letter-spacing: -2px;
 }
 .big-title .grey { color: #b9b9b9; }
 
 .home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: auto; }
 .mini-card {
-  position: relative; border-radius: var(--radius); padding: 20px; min-height: 150px;
+  position: relative; border-radius: var(--radius); padding: clamp(14px, 4vw, 20px);
+  min-height: clamp(96px, 15vh, 150px);
   display: flex; flex-direction: column; overflow: hidden;
 }
-.mini-label { font-size: 1.25rem; font-weight: 850; letter-spacing: -0.5px; line-height: 1; }
-.mini-sub { font-size: 1.25rem; font-weight: 850; color: #00000055; letter-spacing: -0.5px; line-height: 1.1; }
+.mini-label { font-size: clamp(1rem, 4.5vw, 1.25rem); font-weight: 850; letter-spacing: -0.5px; line-height: 1; }
+.mini-sub { font-size: clamp(1rem, 4.5vw, 1.25rem); font-weight: 850; color: #00000055; letter-spacing: -0.5px; line-height: 1.1; }
 .c-yellow { background: var(--yellow); }
 .c-purple { background: var(--purple); }
 .c-pink { background: var(--pink); }
@@ -87,7 +88,7 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 }
 .btn:active { transform: scale(0.97); }
 .btn[disabled] { opacity: 0.35; pointer-events: none; }
-.btn-big { width: 100%; padding: 19px; font-size: 1.15rem; margin-top: 12px; }
+.btn-big { width: 100%; padding: clamp(14px, 4vw, 19px); font-size: 1.12rem; margin-top: 10px; }
 .btn-dark { background: var(--ink); color: #fff; }
 .btn-pink { background: var(--pink); color: var(--ink); }
 .btn-ghost { background: transparent; border: 2px solid #00000018; color: var(--ink); }
@@ -108,7 +109,7 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 }
 
 /* ── Lista de jogadores ── */
-.players-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.players-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; overflow-y: auto; }
 .player-row { display: flex; gap: 8px; align-items: center; }
 .player-row input {
   flex: 1; background: #fff; border: 2px solid transparent; border-radius: 16px;
@@ -122,26 +123,26 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 }
 
 /* ── Impostores ── */
-.mode-toggle { display: flex; background: #ddd; border-radius: 999px; padding: 5px; margin: 10px 0 24px; }
+.mode-toggle { display: flex; background: #ddd; border-radius: 999px; padding: 5px; margin: 10px 0 16px; }
 .mode-btn {
   flex: 1; background: transparent; border: none; color: var(--muted);
   padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 800; cursor: pointer; font-family: inherit;
 }
 .mode-btn.active { background: var(--ink); color: #fff; }
 
-.counter { display: flex; align-items: center; justify-content: center; gap: 26px; margin: 36px 0 12px; }
+.counter { display: flex; align-items: center; justify-content: center; gap: 26px; margin: clamp(16px, 5vh, 36px) 0 12px; }
 .counter-btn {
-  width: 66px; height: 66px; border-radius: 50%; border: none; background: #fff;
+  width: clamp(54px, 14vw, 66px); height: clamp(54px, 14vw, 66px); border-radius: 50%; border: none; background: #fff;
   color: var(--ink); font-size: 2rem; cursor: pointer; font-weight: 700; box-shadow: var(--shadow);
 }
 .counter-btn:active { transform: scale(0.92); }
 .counter-btn[disabled] { opacity: 0.35; }
-.counter-value { font-size: 4rem; font-weight: 850; min-width: 80px; text-align: center; letter-spacing: -2px; }
+.counter-value { font-size: clamp(2.8rem, 12vw, 4rem); font-weight: 850; min-width: 80px; text-align: center; letter-spacing: -2px; }
 
 /* ── Toggle (switch) ── */
 .switch-row {
   display: flex; align-items: center; gap: 14px; justify-content: space-between;
-  background: #fff; border-radius: 18px; padding: 16px 18px; margin-top: 22px;
+  background: #fff; border-radius: 18px; padding: 14px 18px; margin-top: 14px;
   box-shadow: var(--shadow); cursor: pointer;
 }
 .switch-title { font-size: 1rem; font-weight: 800; }
@@ -181,16 +182,16 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .big-card strong { color: var(--ink); }
 
 /* ── Card de revelação (flip) ── */
-.reveal-progress { text-align: center; color: var(--muted); font-weight: 800; margin-bottom: 14px; font-size: 1rem; letter-spacing: 1px; }
+.reveal-progress { text-align: center; color: var(--muted); font-weight: 800; margin-bottom: 12px; font-size: 1rem; letter-spacing: 1px; }
 .card {
-  flex: 1; position: relative; border-radius: var(--radius); margin-bottom: 14px; min-height: 380px;
+  flex: 1; position: relative; border-radius: var(--radius); margin-bottom: 12px; min-height: clamp(180px, 40vh, 400px);
   transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
 .card.flipped { transform: rotateY(180deg); }
 .card-face {
   position: absolute; inset: 0; border-radius: var(--radius);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 32px;
+  text-align: center; padding: clamp(20px, 5vw, 32px);
   backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow);
 }
 .card-front { background: var(--yellow); }
@@ -202,14 +203,14 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
   position: absolute; top: 22px; left: 24px;
   font-size: 0.72rem; font-weight: 800; letter-spacing: 2px; color: #00000055;
 }
-.card-name { font-size: 2.6rem; font-weight: 850; margin-bottom: 22px; letter-spacing: -1px; }
+.card-name { font-size: clamp(1.8rem, 8vw, 2.6rem); font-weight: 850; margin-bottom: clamp(14px, 3vh, 22px); letter-spacing: -1px; }
 .card-instruction { color: #00000077; font-size: 1rem; font-weight: 600; display: flex; flex-direction: column; gap: 8px; }
 .finger { font-size: 2.4rem; animation: tap 1.3s infinite; }
 @keyframes tap { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
 /* conteúdo do verso */
 .role-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 12px; font-weight: 800; }
-.the-word { font-size: 2.9rem; font-weight: 850; line-height: 1.05; margin-bottom: 14px; letter-spacing: -1px; }
+.the-word { font-size: clamp(2rem, 9vw, 2.9rem); font-weight: 850; line-height: 1.05; margin-bottom: 14px; letter-spacing: -1px; }
 .the-impostor { font-size: 2.4rem; font-weight: 850; margin-bottom: 14px; }
 .the-hint { font-size: 1.05rem; font-weight: 600; line-height: 1.45; opacity: 0.85; max-width: 320px; }
 
@@ -217,11 +218,23 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .play-content, .result-content { margin: auto 0; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .play-content .muted, .result-content .muted { margin-top: 18px; }
 .starter {
-  font-size: 3.2rem; font-weight: 850; margin: 6px 0 16px; letter-spacing: -1.5px; line-height: 1;
+  font-size: clamp(2.2rem, 10vw, 3.2rem); font-weight: 850; margin: 6px 0 16px; letter-spacing: -1.5px; line-height: 1;
 }
-.result-word { font-size: 3rem; font-weight: 850; margin: 4px 0; letter-spacing: -1px; }
+.result-word { font-size: clamp(2rem, 9vw, 3rem); font-weight: 850; margin: 4px 0; letter-spacing: -1px; }
 .impostor-reveal { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%; }
 .impostor-reveal .imp {
   background: var(--pink); color: var(--ink); padding: 16px; border-radius: 18px;
   font-size: 1.3rem; font-weight: 850; box-shadow: var(--shadow);
+}
+
+/* mais espaço entre os botões do resultado */
+#screen-result .btn-big + .btn-big { margin-top: 18px; }
+
+/* ecrãs muito baixos: compactar ainda mais */
+@media (max-height: 680px) {
+  .hint-text { display: none; }
+  .mini-card { min-height: 84px; }
+  .card { min-height: 160px; }
+  .switch-sub { display: none; }
+  .muted { margin: 2px 0 10px; }
 }
