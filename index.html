@@ -91,12 +91,21 @@
     <!-- ECRÃ: ESCRITA (modo palavra personalizada) -->
     <section class="screen" id="screen-write">
       <div class="reveal-progress"><span id="write-index">1</span> / <span id="write-total">0</span></div>
-      <div class="card card-static" id="write-card">
-        <div class="write-role" id="write-role">JOGADOR</div>
-        <div class="card-name" id="write-name">Nome</div>
-        <div class="write-instruction" id="write-instruction">Escreve uma palavra…</div>
-        <input type="text" id="write-input" class="write-box" placeholder="palavra…"
-               autocomplete="off" autocapitalize="none" autocorrect="off" />
+      <div class="card" id="write-card">
+        <div class="card-face card-front" id="write-front">
+          <span class="card-corner-label">JOGADOR</span>
+          <div class="card-name" id="write-name">Nome</div>
+          <div class="card-instruction">
+            <span class="finger">👆</span>
+            Pressiona para escrever
+          </div>
+        </div>
+        <div class="card-face card-back" id="write-back">
+          <div class="write-role" id="write-role">JOGADOR</div>
+          <div class="write-instruction" id="write-instruction">Escreve uma palavra…</div>
+          <input type="text" id="write-input" class="write-box" placeholder="palavra…"
+                 autocomplete="off" autocapitalize="none" autocorrect="off" />
+        </div>
       </div>
       <button class="btn btn-dark btn-big" id="btn-write-next">Próximo jogador →</button>
     </section>

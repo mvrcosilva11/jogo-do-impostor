@@ -258,9 +258,9 @@ function renderWriteCard() {
   $("#write-name").textContent = role.name;
 
   const isMaster = state.writeIndex === state.masterIndex;
-  const card = $("#write-card");
-  card.classList.toggle("master", isMaster);
-  card.classList.toggle("decoy", !isMaster);
+  const back = $("#write-back");
+  back.classList.toggle("master", isMaster);
+  back.classList.toggle("decoy", !isMaster);
   $("#write-role").textContent = isMaster ? "🎯 És o Mestre" : "🙈 Disfarce";
   $("#write-instruction").textContent = isMaster
     ? "Escreve a palavra secreta da ronda. Mais ninguém saberá que foste tu."
@@ -269,12 +269,33 @@ function renderWriteCard() {
   input.value = "";
   input.placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";
 
+  $("#write-card").classList.remove("flipped"); // fecha o card para o próximo jogador
+
   const last = state.writeIndex === state.roles.length - 1;
   $("#btn-write-next").textContent = last ? "Ver as cartas →" : "Próximo jogador →";
-  setTimeout(() => input.focus(), 60);
+}
+
+// Card de escrita: pressionar a frente abre o verso (e fica aberto para escrever)
+function bindWriteOpen() {
+  const card = $("#write-card");
+  $("#write-front").addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    if (!card.classList.contains("flipped")) {
+      card.classList.add("flipped");
+      setTimeout(() => $("#write-input").focus(), 300);
+    }
+  });
+  card.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 
 function writeNext() {
+  const card = $("#write-card");
+  // se ainda não abriu o card, abre-o primeiro (em vez de avançar)
+  if (!card.classList.contains("flipped")) {
+    card.classList.add("flipped");
+    setTimeout(() => $("#write-input").focus(), 300);
+    return;
+  }
   const input = $("#write-input");
   const val = input.value.trim();
   // toda a gente escreve algo (disfarça quem é o Mestre)
@@ -442,6 +463,7 @@ function init() {
   }
 
   // Escrita (modo personalizado)
+  bindWriteOpen();
   $("#btn-write-next").addEventListener("click", writeNext);
   $("#write-input").addEventListener("keydown", (e) => { if (e.key === "Enter") writeNext(); });
 
