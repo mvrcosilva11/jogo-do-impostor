@@ -269,7 +269,13 @@ function renderWriteCard() {
   input.value = "";
   input.placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";
 
-  $("#write-card").classList.remove("flipped"); // fecha o card para o próximo jogador
+  // Fecha o card SEM animação para o verso (cor do papel) não "piscar" ao passar
+  // de jogador — esse flash podia revelar quem é o Mestre.
+  const card = $("#write-card");
+  card.style.transition = "none";
+  card.classList.remove("flipped");
+  void card.offsetWidth;      // força reflow
+  card.style.transition = "";  // restaura a animação (só para a abertura)
 
   const last = state.writeIndex === state.roles.length - 1;
   $("#btn-write-next").textContent = last ? "Ver as cartas →" : "Próximo jogador →";
