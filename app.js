@@ -257,6 +257,30 @@ function renderWriteCard() {
   $("#write-total").textContent = state.roles.length;
   $("#write-name").textContent = role.name;
 
+  $("#write-input").value = "";
+
+  // Verso NEUTRO enquanto fechado — a cor/crachá do papel (Mestre vs disfarce)
+  // só é aplicada ao ABRIR. Assim nunca "pisca" na troca de jogador.
+  const back = $("#write-back");
+  back.classList.remove("master", "decoy");
+  $("#write-role").textContent = "";
+  $("#write-instruction").textContent = "";
+
+  // Fecha o card sem animação (não deixa o verso aparecer a meio da rotação).
+  const card = $("#write-card");
+  card.style.transition = "none";
+  card.classList.remove("flipped");
+  void card.offsetWidth;       // força reflow
+  card.style.transition = "";   // restaura a animação (só para a abertura)
+
+  const last = state.writeIndex === state.roles.length - 1;
+  $("#btn-write-next").textContent = last ? "Ver as cartas →" : "Próximo jogador →";
+}
+
+// Abre o card de escrita: só agora se revela (em privado) se és Mestre ou disfarce.
+function openWriteCard() {
+  const card = $("#write-card");
+  if (card.classList.contains("flipped")) return;
   const isMaster = state.writeIndex === state.masterIndex;
   const back = $("#write-back");
   back.classList.toggle("master", isMaster);
@@ -265,43 +289,22 @@ function renderWriteCard() {
   $("#write-instruction").textContent = isMaster
     ? "Escreve a palavra secreta da ronda. Mais ninguém saberá que foste tu."
     : "Escreve uma palavra qualquer só para disfarçar — esta não conta.";
-  const input = $("#write-input");
-  input.value = "";
-  input.placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";
-
-  // Fecha o card SEM animação para o verso (cor do papel) não "piscar" ao passar
-  // de jogador — esse flash podia revelar quem é o Mestre.
-  const card = $("#write-card");
-  card.style.transition = "none";
-  card.classList.remove("flipped");
-  void card.offsetWidth;      // força reflow
-  card.style.transition = "";  // restaura a animação (só para a abertura)
-
-  const last = state.writeIndex === state.roles.length - 1;
-  $("#btn-write-next").textContent = last ? "Ver as cartas →" : "Próximo jogador →";
+  $("#write-input").placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";
+  card.classList.add("flipped");
+  setTimeout(() => $("#write-input").focus(), 300);
 }
 
 // Card de escrita: pressionar a frente abre o verso (e fica aberto para escrever)
 function bindWriteOpen() {
   const card = $("#write-card");
-  $("#write-front").addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    if (!card.classList.contains("flipped")) {
-      card.classList.add("flipped");
-      setTimeout(() => $("#write-input").focus(), 300);
-    }
-  });
+  $("#write-front").addEventListener("pointerdown", (e) => { e.preventDefault(); openWriteCard(); });
   card.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 
 function writeNext() {
   const card = $("#write-card");
   // se ainda não abriu o card, abre-o primeiro (em vez de avançar)
-  if (!card.classList.contains("flipped")) {
-    card.classList.add("flipped");
-    setTimeout(() => $("#write-input").focus(), 300);
-    return;
-  }
+  if (!card.classList.contains("flipped")) { openWriteCard(); return; }
   const input = $("#write-input");
   const val = input.value.trim();
   // toda a gente escreve algo (disfarça quem é o Mestre)
