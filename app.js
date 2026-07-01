@@ -258,9 +258,13 @@ function renderWriteCard() {
   $("#write-name").textContent = role.name;
 
   const isMaster = state.writeIndex === state.masterIndex;
+  const card = $("#write-card");
+  card.classList.toggle("master", isMaster);
+  card.classList.toggle("decoy", !isMaster);
+  $("#write-role").textContent = isMaster ? "🎯 És o Mestre" : "🙈 Disfarce";
   $("#write-instruction").textContent = isMaster
-    ? "🎯 És tu a escolher! Escreve a palavra da ronda — ninguém saberá que foste tu."
-    : "Escreve uma palavra qualquer. É só disfarce — não conta.";
+    ? "Escreve a palavra secreta da ronda. Mais ninguém saberá que foste tu."
+    : "Escreve uma palavra qualquer só para disfarçar — esta não conta.";
   const input = $("#write-input");
   input.value = "";
   input.placeholder = isMaster ? "a palavra secreta…" : "qualquer coisa…";

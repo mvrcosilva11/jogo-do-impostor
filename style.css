@@ -152,8 +152,25 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .switch-row.on .switch .knob { transform: translateX(22px); }
 
 /* ── Caixa de escrita (modo personalizado) ── */
-.card-static { transform: none !important; }
-.write-instruction { color: #00000088; font-size: 0.98rem; font-weight: 600; line-height: 1.4; max-width: 300px; margin-bottom: 18px; }
+.card-static {
+  transform: none !important;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 32px; box-shadow: var(--shadow);
+  background: var(--yellow); transition: background 0.2s ease;
+}
+.card-static.master { background: var(--yellow); }
+.card-static.decoy { background: #d9d9e2; }
+
+.write-role {
+  font-size: 0.9rem; font-weight: 850; letter-spacing: 2px; text-transform: uppercase;
+  padding: 9px 18px; border-radius: 999px; margin-bottom: 20px;
+}
+.card-static.master .write-role { background: var(--ink); color: var(--yellow); }
+.card-static.decoy .write-role { background: #00000018; color: #00000077; }
+.card-static.master .card-name { font-size: 2rem; }
+.card-static.decoy .card-name { font-size: 2rem; opacity: 0.85; }
+
+.write-instruction { color: #000000aa; font-size: 1rem; font-weight: 700; line-height: 1.4; max-width: 300px; margin-bottom: 18px; }
 .write-box {
   width: 86%; background: #00000010; border: 2px solid #00000018; border-radius: 14px;
   padding: 15px 16px; font-size: 1.3rem; font-weight: 800; font-family: inherit; color: var(--ink);
