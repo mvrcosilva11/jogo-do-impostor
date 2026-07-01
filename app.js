@@ -338,13 +338,13 @@ function renderRevealCard() {
   if (role.isImpostor) {
     back.innerHTML = hasHint
       ? `
-        <div class="role-label">🤫 És o impostor</div>
-        <div class="the-word">${escapeHtml(hintWord)}</div>
-        <div class="the-hint">A tua única pista. Disfarça.</div>`
+        <div class="role-label">A tua palavra</div>
+        <div class="the-word">Impostor</div>
+        <div class="the-hint">🤫 Pista: ${escapeHtml(hintWord)}</div>`
       : `
-        <div class="role-label">🤫 És o impostor</div>
-        <div class="the-impostor">Sem pista</div>
-        <div class="the-hint">Desenrasca-te! 😅</div>`;
+        <div class="role-label">A tua palavra</div>
+        <div class="the-word">Impostor</div>
+        <div class="the-hint">🤫 Sem pista — desenrasca-te! 😅</div>`;
   } else {
     back.innerHTML = `
       <div class="role-label">A tua palavra</div>
