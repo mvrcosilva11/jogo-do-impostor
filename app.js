@@ -75,6 +75,17 @@ function maxImpostorsManual(n) {
   return Math.max(1, Math.floor(n / 3)); // até 1/3, no mínimo 1
 }
 
+// Nº de impostores no modo aleatório: favorece 1, decresce até "todos" (o mais raro).
+// Peso de k impostores = (n - k + 1)^2 → ex. n=5: 45% / 29% / 16% / 7% / 2%.
+function weightedImpostorCount(n) {
+  const weights = [];
+  let total = 0;
+  for (let k = 1; k <= n; k++) { const w = (n - k + 1) * (n - k + 1); weights.push(w); total += w; }
+  let r = Math.random() * total;
+  for (let k = 1; k <= n; k++) { r -= weights[k - 1]; if (r < 0) return k; }
+  return n;
+}
+
 // ─────────────────── PALAVRAS DE ATUALIDADE (online) ───────────────────
 function mergeTrending(extra) {
   if (!extra || !extra.length) return 0;
@@ -204,7 +215,7 @@ function assignRoles() {
 
   let count;
   if (state.impostorMode === "random") {
-    count = randInt(1, n); // pode calhar de 1 a todos
+    count = weightedImpostorCount(n); // favorece poucos; "todos" é raro
   } else {
     count = Math.min(state.impostorCount, maxImpostorsManual(n));
   }
@@ -224,15 +235,17 @@ function assignRoles() {
     state.word = null;       // será escrita
     state.customWord = "";
     state.writeIndex = 0;
+  } else if (count === names.length) {
+    // TODOS impostores: NÃO há palavra oficial da ronda — pistas totalmente
+    // aleatórias e diferentes para cada um.
+    state.masterIndex = -1;
+    state.word = null;
+    const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
+    state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
   } else {
     state.masterIndex = -1;
     // escolher palavra (50/50 atualidade/banco, sem repetir na sessão)
     state.word = pickWord();
-    // Caso especial: TODOS são impostores → cada um recebe pista aleatória e DIFERENTE
-    if (count === names.length) {
-      const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
-      state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
-    }
   }
 
   state.revealIndex = 0;
@@ -342,7 +355,7 @@ function renderRevealCard() {
 
   const back = $("#card-back");
   back.className = "card-face card-back " + (role.isImpostor ? "is-impostor" : "is-word");
-  const hintWord = role.hint || state.word.d; // role.hint só existe no modo "todos impostores"
+  const hintWord = role.hint || (state.word ? state.word.d : ""); // role.hint = modo "todos impostores"
   const hasHint = !!(hintWord && hintWord.trim());
   if (role.isImpostor) {
     back.innerHTML = hasHint
@@ -399,7 +412,14 @@ function startPlay() {
 
 // ─────────────────────────── ECRÃ: RESULTADO ───────────────────────────
 function showResult() {
-  $("#result-word").textContent = state.word.p;
+  if (state.word) {
+    $("#result-label").textContent = "A palavra era:";
+    $("#result-word").textContent = state.word.p;
+  } else {
+    // sem palavra oficial → eram todos impostores
+    $("#result-label").textContent = "Não havia palavra:";
+    $("#result-word").textContent = "Eram todos impostores! 🤯";
+  }
   const box = $("#impostor-names");
   box.innerHTML = "";
   state.roles.filter((r) => r.isImpostor).forEach((r) => {
