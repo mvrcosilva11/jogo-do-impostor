@@ -227,8 +227,13 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
   font-size: 1.3rem; font-weight: 850; box-shadow: var(--shadow);
 }
 
-/* mais espaço entre os botões do resultado */
-#screen-result .btn-big + .btn-big { margin-top: 18px; }
+/* botões do resultado: tamanhos uniformes e bem proporcionados */
+#screen-result .btn-big {
+  height: 60px; padding: 0 22px; margin-top: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; border-radius: 999px;
+}
+#screen-result .btn-big + .btn-big { margin-top: 14px; }
 
 /* ecrãs muito baixos: compactar ainda mais */
 @media (max-height: 680px) {
