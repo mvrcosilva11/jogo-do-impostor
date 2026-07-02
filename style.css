@@ -156,15 +156,13 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 #write-front { background: linear-gradient(160deg, #3a3550, #262238); }
 #write-front .card-name, #write-front .card-instruction { color: #fff; }
 #write-front .card-instruction { opacity: 0.75; }
-#write-back.master { background: var(--yellow); color: var(--ink); }
-#write-back.decoy { background: #d9d9e2; color: var(--ink); }
+#write-back { background: var(--blue); color: var(--ink); }
 
 .write-role {
   font-size: 0.9rem; font-weight: 850; letter-spacing: 2px; text-transform: uppercase;
   padding: 9px 18px; border-radius: 999px; margin-bottom: 18px;
+  background: #00000018; color: #00000088;
 }
-#write-back.master .write-role { background: var(--ink); color: var(--yellow); }
-#write-back.decoy .write-role { background: #00000018; color: #00000077; }
 
 .write-instruction { color: #000000aa; font-size: 1rem; font-weight: 700; line-height: 1.4; max-width: 300px; margin-bottom: 18px; }
 .write-box {
