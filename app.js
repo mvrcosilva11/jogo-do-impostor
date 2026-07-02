@@ -383,9 +383,33 @@ function nextPlayer() {
 }
 
 // ─────────────────────────── ECRÃ: JOGO ────────────────────────────────
+// Mostra o gif de quem começa (gifs/<nome>.gif). Faz corresponder por palavra do nome.
+function showStarterGif(name) {
+  const holder = $("#starter-gif");
+  holder.innerHTML = "";
+  holder.style.display = "none";
+  if (!name) return;
+  const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+  const words = norm(name).split(/\s+/).filter(Boolean);
+  const candidates = [...words, norm(name).replace(/\s+/g, "")]; // palavras + nome sem espaços
+  let i = 0;
+  const tryNext = () => {
+    if (i >= candidates.length) return; // sem gif para este nome
+    const key = candidates[i++];
+    const img = new Image();
+    img.className = "starter-gif-img";
+    img.alt = "";
+    img.onload = () => { holder.innerHTML = ""; holder.appendChild(img); holder.style.display = "block"; };
+    img.onerror = tryNext;
+    img.src = "gifs/" + encodeURIComponent(key) + ".gif";
+  };
+  tryNext();
+}
+
 function startPlay() {
   state.starter = state.roles[Math.floor(Math.random() * state.roles.length)].name;
   $("#starter-name").textContent = state.starter;
+  showStarterGif(state.starter);
   showScreen("screen-play");
   playRoundMusic(); // suspense em loop até revelar
 }

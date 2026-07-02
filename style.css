@@ -29,7 +29,7 @@ body { -webkit-user-select: none; user-select: none; }
   max-width: 460px;
   margin: 0 auto;
   height: 100dvh;
-  padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 10px);
+  padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 24px);
 }
 
 /* ── Ecrãs ── */
@@ -216,7 +216,12 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .play-content, .result-content { margin: auto 0; text-align: center; display: flex; flex-direction: column; align-items: center; }
 .play-content .muted, .result-content .muted { margin-top: 18px; }
 .starter {
-  font-size: clamp(2.2rem, 10vw, 3.2rem); font-weight: 850; margin: 6px 0 16px; letter-spacing: -1.5px; line-height: 1;
+  font-size: clamp(2.2rem, 10vw, 3.2rem); font-weight: 850; margin: 6px 0 4px; letter-spacing: -1.5px; line-height: 1;
+}
+.starter-gif { display: none; width: 100%; margin: 12px 0 4px; }
+.starter-gif-img {
+  display: block; margin: 0 auto; max-width: 82%; max-height: 34vh;
+  border-radius: 18px; box-shadow: var(--shadow); object-fit: contain;
 }
 .result-word { font-size: clamp(2rem, 9vw, 3rem); font-weight: 850; margin: 4px 0; letter-spacing: -1px; }
 .impostor-reveal { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%; }
