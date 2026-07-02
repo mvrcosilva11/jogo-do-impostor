@@ -42,6 +42,16 @@ function showScreen(id) {
   window.scrollTo(0, 0);
 }
 
+// ── Música de suspense (ecrã "quem começa"), em loop ──
+const roundAudio = new Audio("background%20round%20sound.mp3");
+roundAudio.loop = true;
+function playRoundMusic() {
+  try { roundAudio.currentTime = 0; roundAudio.play().catch(() => {}); } catch (e) {}
+}
+function stopRoundMusic() {
+  try { roundAudio.pause(); roundAudio.currentTime = 0; } catch (e) {}
+}
+
 function randInt(min, max) { // inclusive
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -62,9 +72,11 @@ function maxImpostorsManual(n) {
 // Nº de impostores no modo aleatório: favorece 1, decresce até "todos" (o mais raro,
 // mas não residual). Peso linear = (n - k + 1) → ex. n=5: 33% / 27% / 20% / 13% / 7%.
 function weightedImpostorCount(n) {
+  // 1 impostor é de longe o mais provável; decresce até "todos" (raro, mas não residual).
+  // Peso = 1/k → ex. n=5: 44% / 22% / 15% / 11% / 9%.
   const weights = [];
   let total = 0;
-  for (let k = 1; k <= n; k++) { const w = n - k + 1; weights.push(w); total += w; }
+  for (let k = 1; k <= n; k++) { const w = 1 / k; weights.push(w); total += w; }
   let r = Math.random() * total;
   for (let k = 1; k <= n; k++) { r -= weights[k - 1]; if (r < 0) return k; }
   return n;
@@ -375,10 +387,12 @@ function startPlay() {
   state.starter = state.roles[Math.floor(Math.random() * state.roles.length)].name;
   $("#starter-name").textContent = state.starter;
   showScreen("screen-play");
+  playRoundMusic(); // suspense em loop até revelar
 }
 
 // ─────────────────────────── ECRÃ: RESULTADO ───────────────────────────
 function showResult() {
+  stopRoundMusic();
   if (state.word) {
     $("#result-label").textContent = "A palavra era:";
     $("#result-word").textContent = state.word.p;
@@ -400,13 +414,23 @@ function showResult() {
 
 // ─────────────────────────── NOVO JOGO ─────────────────────────────────
 function newGame() {
+  stopRoundMusic();
   state.players = [];
   state.impostorCount = 1;
   showScreen("screen-home");
 }
 
+// Jogar novamente: mesmas pessoas e mesmo método, nova ronda.
 function replaySamePlayers() {
+  stopRoundMusic();
   startDistribution();
+}
+
+// Alterar método: mesmas pessoas, volta ao ecrã de impostores para mudar as opções.
+function changeMethod() {
+  stopRoundMusic();
+  setupImpostorScreen();
+  showScreen("screen-impostors");
 }
 
 // ─────────────────────────── LIGAÇÕES (EVENTOS) ────────────────────────
@@ -471,8 +495,9 @@ function init() {
   $("#btn-reveal-impostor").addEventListener("click", showResult);
 
   // Resultado
+  $("#btn-play-again").addEventListener("click", replaySamePlayers);
+  $("#btn-change-method").addEventListener("click", changeMethod);
   $("#btn-new-game").addEventListener("click", newGame);
-  $("#btn-same-players").addEventListener("click", replaySamePlayers);
 }
 
 document.addEventListener("DOMContentLoaded", init);

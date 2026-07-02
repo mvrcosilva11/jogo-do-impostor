@@ -33,7 +33,7 @@ body { -webkit-user-select: none; user-select: none; }
 }
 
 /* ── Ecrãs ── */
-.screen { display: none; flex-direction: column; height: 100%; animation: fade 0.28s ease; }
+.screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; animation: fade 0.28s ease; }
 .screen.active { display: flex; }
 @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .spacer { flex: 1; }
@@ -225,13 +225,14 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
   font-size: 1.3rem; font-weight: 850; box-shadow: var(--shadow);
 }
 
-/* botões do resultado: tamanhos uniformes e bem proporcionados */
+/* botões do resultado: tamanhos uniformes e bem proporcionados (3 opções) */
 #screen-result .btn-big {
-  height: 60px; padding: 0 22px; margin-top: 0;
+  height: 54px; padding: 0 22px; margin-top: 0; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  font-size: 1.1rem; border-radius: 999px;
+  font-size: 1.05rem; border-radius: 999px;
 }
-#screen-result .btn-big + .btn-big { margin-top: 14px; }
+#screen-result .btn-big + .btn-big { margin-top: 10px; }
+.result-content { margin: 14px 0; }
 
 /* ecrãs muito baixos: compactar ainda mais */
 @media (max-height: 680px) {
