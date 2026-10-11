@@ -19,8 +19,10 @@
   function resetSig() { sig = {}; }
 
   // ── escolha de palavra (anfitrião) ──
+  // wordBank() (global, do app.js) devolve as palavras em jogo: sem atualidade e,
+  // com o Studio Mode desligado, sem a categoria "Amigos". O online respeita isso.
   function pickOnlineWord() {
-    var pool = WORDS.filter(function (w) { return !isTrend(w); });
+    var pool = wordBank();
     var w = pool[Math.floor(Math.random() * pool.length)];
     var d = w.d;
     if (w.r && w.r.length) d = w.r[Math.floor(Math.random() * w.r.length)];
@@ -28,7 +30,7 @@
   }
   function distinctHints() {
     var seen = {}, out = [];
-    WORDS.forEach(function (w) { if (w.d && w.d.trim() && !seen[w.d]) { seen[w.d] = 1; out.push(w.d); } });
+    wordBank().forEach(function (w) { if (w.d && w.d.trim() && !seen[w.d]) { seen[w.d] = 1; out.push(w.d); } });
     return out;
   }
   function maxImpMp(n) { return Math.max(1, Math.floor(n / 3)); }
