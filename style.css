@@ -57,7 +57,9 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .jm {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
   color: var(--ink); text-decoration: none; font-size: 0.92rem; font-weight: 850; letter-spacing: -0.3px;
+  white-space: nowrap;
 }
+.home-top .kicker { white-space: nowrap; }
 .jm-mark { width: 24px; height: 24px; flex-shrink: 0; }
 .jm:focus-visible, .switch-row:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .hero { margin: clamp(2px, 1vh, 8px) 0 clamp(12px, 3vh, 22px); }

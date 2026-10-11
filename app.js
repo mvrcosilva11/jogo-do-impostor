@@ -26,7 +26,15 @@ function loadStudio() {
   let on = false;
   try { on = localStorage.getItem(STUDIO_KEY) === "1"; } catch (e) {}
   const q = new URLSearchParams(location.search).get("studio");
-  if (q === "1" || q === "0") { on = q === "1"; saveStudio(on); }
+  if (q === "1" || q === "0") {
+    on = q === "1";
+    saveStudio(on);
+    try { // lê-se uma vez e sai do endereço: recarregar não volta a impor a escolha do link
+      const u = new URL(location.href);
+      u.searchParams.delete("studio");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    } catch (e) {}
+  }
   return on;
 }
 state.studio = loadStudio();
