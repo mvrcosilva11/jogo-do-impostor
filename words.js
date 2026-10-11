@@ -2,7 +2,9 @@
 // Cada entrada: { p: palavra, d: PISTA (uma só palavra, OBLÍQUA), c: categoria }
 // A pista é vista APENAS pelo impostor. Não é a característica óbvia, mas uma
 // associação lateral (contexto, alcunha, consequência, símbolo) que obrigue a pensar.
-// Inclui palavras de nicho e difíceis. Os nomes do grupo não têm pista (d: "").
+// Inclui palavras de nicho e difíceis.
+// A categoria "Amigos" (os nomes do pessoal do estúdio) só entra em jogo com o Studio Mode
+// ligado: ver STUDIO_CATS em app.js. Fora dela não pode haver nomes nem piadas do grupo.
 
 const WORDS = [
   // ───────────────────────────── ANIMAIS ─────────────────────────────

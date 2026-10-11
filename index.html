@@ -13,7 +13,11 @@
     <!-- ECRÃ: INÍCIO -->
     <section class="screen active" id="screen-home">
       <div class="home-top">
-        <span class="kicker">PARTY GAME</span>
+        <a class="jm" href="https://joguinhos-do-marco.netlify.app/" aria-label="Joguinhos do Marco: ver todos os joguinhos">
+          <svg class="jm-mark" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#0a0a0a"/><circle cx="8" cy="8" r="2.7" fill="#FFE23F"/><circle cx="16" cy="8" r="2.7" fill="#FF8BC2"/><circle cx="8" cy="16" r="2.7" fill="#6FB6FF"/><circle cx="16" cy="16" r="2.7" fill="#62DFA0"/></svg>
+          <span>Joguinhos do Marco</span>
+        </a>
+        <span class="kicker">N.º 1 · PARTY GAME</span>
       </div>
       <div class="hero">
         <h1 class="big-title">Jogo<br>do<br><span class="grey">Impostor</span></h1>
@@ -30,7 +34,16 @@
           <div class="shape arrow"></div>
         </div>
       </div>
-      <button class="btn btn-dark btn-big" id="btn-start">Iniciar jogo →</button>
+      <!-- Studio Mode: desligado é o jogo normal; ligado junta os nomes e os gifs do pessoal do estúdio -->
+      <div class="switch-row" id="studio-toggle" role="switch" aria-checked="false" tabindex="0">
+        <div>
+          <div class="switch-title">Studio Mode</div>
+          <div class="switch-sub">Junta os nomes e os gifs do pessoal do estúdio. Desligado, é o jogo normal.</div>
+        </div>
+        <span class="switch"><span class="knob"></span></span>
+      </div>
+      <button class="btn btn-dark btn-big" id="btn-start">Jogar neste telemóvel →</button>
+      <button class="btn btn-ghost btn-big" id="btn-online">Jogar com amigos (online) →</button>
     </section>
 
     <!-- ECRÃ: JOGADORES -->
@@ -154,9 +167,104 @@
       <button class="btn btn-ghost btn-big" id="btn-new-game">Começar novo jogo</button>
     </section>
 
+    <!-- ══════════════════════════ MULTIPLAYER ══════════════════════════ -->
+
+    <!-- ONLINE: entrada -->
+    <section class="screen" id="screen-online">
+      <header class="topbar">
+        <button class="btn-back" data-goto="screen-home">←</button>
+        <h2>Jogar online</h2>
+      </header>
+      <p class="muted">Cria uma sala e partilha o código, ou entra com um código.</p>
+      <div class="player-row"><input id="mp-name" type="text" placeholder="O teu nome" autocomplete="off" autocapitalize="words" /></div>
+      <button class="btn btn-dark btn-big" id="btn-create">Criar sala</button>
+      <div class="or-sep"><span>ou</span></div>
+      <div class="player-row"><input id="mp-code" class="code-input" type="text" placeholder="CÓDIGO" maxlength="4" autocomplete="off" autocapitalize="characters" /></div>
+      <button class="btn btn-ghost btn-big" id="btn-join">Entrar na sala</button>
+      <p class="mp-status" id="mp-status"></p>
+    </section>
+
+    <!-- ONLINE: lobby -->
+    <section class="screen" id="screen-lobby">
+      <div class="lobby-top">
+        <span class="kicker">SALA <span class="net-dot" id="net-dot"></span></span>
+        <div class="lobby-code" id="lobby-code">----</div>
+        <p class="muted center" id="lobby-count">0 jogadores</p>
+      </div>
+      <div class="mp-players" id="lobby-players"></div>
+
+      <div id="lobby-host">
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mpmode="manual">Escolher</button>
+          <button class="mode-btn" data-mpmode="random">Aleatório</button>
+        </div>
+        <div id="mp-manual-box">
+          <div class="counter">
+            <button class="counter-btn" id="mp-imp-minus">−</button>
+            <div class="counter-value"><span id="mp-imp-count">1</span></div>
+            <button class="counter-btn" id="mp-imp-plus">+</button>
+          </div>
+          <p class="muted center">impostores (máx. <span id="mp-imp-max">1</span>)</p>
+        </div>
+        <div id="mp-random-box" class="hidden">
+          <p class="muted center">Número de impostores sorteado (1 é o mais provável).</p>
+        </div>
+        <label class="switch-row" id="mp-photo-toggle">
+          <div>
+            <div class="switch-title">Modo fotos 📸</div>
+            <div class="switch-sub">Em vez de dizer uma palavra, cada um envia uma foto e veem-se todas.</div>
+          </div>
+          <span class="switch"><span class="knob"></span></span>
+        </label>
+      </div>
+
+      <div class="spacer"></div>
+      <button class="btn btn-dark btn-big" id="btn-lobby-start">Começar</button>
+      <p class="hint-text" id="lobby-wait">À espera que o anfitrião comece…</p>
+      <button class="btn btn-ghost btn-big" id="btn-lobby-leave">Sair da sala</button>
+    </section>
+
+    <!-- ONLINE: a tua carta + ronda -->
+    <section class="screen" id="screen-mp-round">
+      <div class="reveal-progress" id="mp-round-head">A TUA CARTA</div>
+      <div class="card" id="mp-card">
+        <div class="card-face card-front" id="mp-front">
+          <span class="card-corner-label">A TUA CARTA</span>
+          <div class="card-name" id="mp-myname">—</div>
+          <div class="card-instruction"><span class="finger">👆</span> Pressiona e mantém para ver</div>
+        </div>
+        <div class="card-face card-back is-word" id="mp-back"></div>
+      </div>
+      <div id="mp-round-foot"></div>
+    </section>
+
+    <!-- ONLINE: galeria de fotos -->
+    <section class="screen" id="screen-mp-gallery">
+      <div class="reveal-progress">FOTOS DA RONDA</div>
+      <div class="gallery" id="mp-gallery"></div>
+      <div class="spacer"></div>
+      <div id="mp-gallery-foot"></div>
+    </section>
+
+    <!-- ONLINE: resultado -->
+    <section class="screen" id="screen-mp-result">
+      <div class="result-content">
+        <span class="kicker">FIM DE JOGO</span>
+        <p class="muted" id="mp-result-label">A palavra era:</p>
+        <div class="result-word" id="mp-result-word">—</div>
+        <p class="muted top-gap">Impostor(es):</p>
+        <div class="impostor-reveal" id="mp-impostor-names"></div>
+      </div>
+      <div id="mp-result-foot"></div>
+      <button class="btn btn-ghost btn-big" id="btn-mp-leave">Sair da sala</button>
+    </section>
+
   </main>
 
   <script src="words.js"></script>
+  <script src="net.js"></script>
+  <script src="online.js"></script>
   <script src="app.js"></script>
+  <script src="mp.js"></script>
 </body>
 </html>

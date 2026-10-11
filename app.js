@@ -15,13 +15,33 @@ const state = {
   customWords: [],      // sugestão de cada jogador (modo personalizado)
 };
 
+// ── Studio Mode (Joguinhos do Marco) ──
+// Desligado (por omissão) é o jogo normal: sem os nomes nem os gifs do pessoal do estúdio.
+// A escolha fica guardada no telemóvel; ?studio=1 ou ?studio=0 no link também a define.
+const STUDIO_KEY = "impostor.studio";
+const STUDIO_CATS = ["Amigos"]; // categorias que só entram com o Studio Mode ligado
+function isStudio(w) { return STUDIO_CATS.indexOf(w.c) >= 0; }
+function saveStudio(on) { try { localStorage.setItem(STUDIO_KEY, on ? "1" : "0"); } catch (e) {} }
+function loadStudio() {
+  let on = false;
+  try { on = localStorage.getItem(STUDIO_KEY) === "1"; } catch (e) {}
+  const q = new URLSearchParams(location.search).get("studio");
+  if (q === "1" || q === "0") { on = q === "1"; saveStudio(on); }
+  return on;
+}
+state.studio = loadStudio();
+
 // Escolhe a palavra do BANCO (sem atualidade),
 // sem repetir dentro da mesma sessão de abertura.
 function isTrend(w) { return !!(w.c && w.c.indexOf("Atualidade") === 0); }
 
+// As palavras em jogo: o banco, sem atualidade e, fora do Studio Mode, sem as do estúdio.
+// Qualquer modo de jogo (local ou online) deve tirar as palavras e as pistas daqui.
+function wordBank() { return WORDS.filter((w) => !isTrend(w) && (state.studio || !isStudio(w))); }
+
 function pickWord() {
   const used = state.usedWords;
-  const bank = WORDS.filter((w) => !isTrend(w)); // apenas banco (sem atualidade)
+  const bank = wordBank();
   let avail = bank.filter((w) => !used.has(w.p));
   if (!avail.length) { used.clear(); avail = bank; } // esgotou → recomeça a sessão
   const w = avail[Math.floor(Math.random() * avail.length)];
@@ -220,7 +240,7 @@ function assignRoles() {
   if (count === names.length) {
     // TODOS impostores: NÃO há palavra oficial — pistas aleatórias e diferentes.
     state.word = null;
-    const pistas = shuffle([...new Set(WORDS.map((w) => w.d).filter((d) => d && d.trim()))]);
+    const pistas = shuffle([...new Set(wordBank().map((w) => w.d).filter((d) => d && d.trim()))]);
     state.roles.forEach((r, i) => { r.hint = pistas[i % pistas.length]; });
   } else {
     state.word = pickWord(); // apenas do banco
@@ -388,7 +408,7 @@ function showStarterGif(name) {
   const holder = $("#starter-gif");
   holder.innerHTML = "";
   holder.style.display = "none";
-  if (!name) return;
+  if (!name || !state.studio) return; // os gifs são do pessoal do estúdio
   const norm = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
   const words = norm(name).split(/\s+/).filter(Boolean);
   const candidates = [...words, norm(name).replace(/\s+/g, "")]; // palavras + nome sem espaços
@@ -465,6 +485,19 @@ function init() {
     renderPlayers();
     showScreen("screen-players");
   });
+
+  // Studio Mode (escolhe-se antes de começar)
+  const studioToggle = $("#studio-toggle");
+  const paintStudio = () => {
+    studioToggle.classList.toggle("on", state.studio);
+    studioToggle.setAttribute("aria-checked", String(state.studio));
+  };
+  const flipStudio = () => { state.studio = !state.studio; saveStudio(state.studio); paintStudio(); };
+  studioToggle.addEventListener("click", flipStudio);
+  studioToggle.addEventListener("keydown", (e) => {
+    if (e.key === " " || e.key === "Enter") { e.preventDefault(); flipStudio(); }
+  });
+  paintStudio();
 
   // Botões "voltar"
   $$("[data-goto]").forEach((b) =>

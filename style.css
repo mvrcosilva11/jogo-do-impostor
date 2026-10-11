@@ -51,7 +51,15 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .hint-text { color: var(--muted); font-size: 0.9rem; font-weight: 500; line-height: 1.5; margin-top: 16px; }
 
 /* ── Início ── */
-.home-top { margin-bottom: 6px; }
+.home-top { margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+
+/* Marca Joguinhos do Marco (liga à página com os joguinhos todos) */
+.jm {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+  color: var(--ink); text-decoration: none; font-size: 0.92rem; font-weight: 850; letter-spacing: -0.3px;
+}
+.jm-mark { width: 24px; height: 24px; flex-shrink: 0; }
+.jm:focus-visible, .switch-row:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .hero { margin: clamp(2px, 1vh, 8px) 0 clamp(12px, 3vh, 22px); }
 .big-title {
   font-size: clamp(2.6rem, 12vw, 4.4rem); font-weight: 850; line-height: 0.92; letter-spacing: -2px;
@@ -239,6 +247,9 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 #screen-result .btn-big + .btn-big { margin-top: 10px; }
 .result-content { margin: 14px 0; }
 
+/* Studio Mode no início: fica logo por cima dos botões de começar */
+#studio-toggle { margin-top: clamp(10px, 2.4vh, 16px); }
+
 /* ecrãs muito baixos: compactar ainda mais */
 @media (max-height: 680px) {
   .hint-text { display: none; }
@@ -247,3 +258,27 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
   .switch-sub { display: none; }
   .muted { margin: 2px 0 10px; }
 }
+
+/* ─────────────────────────── MULTIPLAYER ─────────────────────────── */
+.or-sep { text-align: center; color: var(--muted); font-weight: 700; margin: 14px 0; position: relative; }
+.or-sep span { background: var(--bg); padding: 0 12px; position: relative; z-index: 1; }
+.or-sep::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #00000012; }
+.code-input { text-transform: uppercase; text-align: center; letter-spacing: 8px; font-weight: 850; font-size: 1.6rem; }
+.mp-status { text-align: center; color: var(--accent, #c0392b); font-weight: 700; font-size: 0.9rem; margin-top: 14px; min-height: 1.2em; color: #b23; }
+
+.lobby-top { text-align: center; margin-bottom: 10px; }
+.lobby-code { font-size: clamp(3rem, 16vw, 5rem); font-weight: 850; letter-spacing: 6px; line-height: 1; margin: 4px 0; }
+.net-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #ccc; vertical-align: middle; margin-left: 4px; }
+.net-dot.on { background: #2ecc71; }
+
+.mp-players { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 16px; overflow-y: auto; }
+.mp-player { background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 800; box-shadow: var(--shadow); font-size: 0.95rem; }
+
+.play-foot { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 14px; }
+.play-foot .btn-big { width: 100%; }
+
+.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; padding: 4px 0; }
+.gcell { position: relative; border-radius: 16px; overflow: hidden; background: #ddd; box-shadow: var(--shadow); aspect-ratio: 3/4; }
+.gcell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gph { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-weight: 700; font-size: 0.85rem; }
+.gname { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(transparent, #000a); color: #fff; font-weight: 800; font-size: 0.85rem; padding: 14px 8px 6px; text-align: center; }

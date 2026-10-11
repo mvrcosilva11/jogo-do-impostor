@@ -1,5 +1,7 @@
 # 🕵️ Jogo do Impostor
 
+Joguinho n.º 1 dos **Joguinhos do Marco** (https://joguinhos-do-marco.netlify.app).
+
 Jogo de festa para um só telemóvel, passado de mão em mão. Todos recebem uma palavra secreta — exceto o(s) impostor(es), que só recebem uma dica subtil. Conversem, desconfiem e descubram quem está a fingir.
 
 ## Como jogar
@@ -21,6 +23,10 @@ Além do banco fixo, a app gera **palavras novas a partir do que está em tendê
 Animais, Profissões, Plantas, Comida, Lugares, Objetos, Celebridades, Personalidades Portuguesas, Música, Filmes & Séries, Youtubers PT, Brainrot, Portugal, Futebol, Drogas, Weed, Slang PT, Amigos — e **Atualidade 🔥** (dinâmica).
 
 Para acrescentar palavras, edita [`words.js`](words.js) — cada linha é `{ p: "palavra", d: "pista", c: "categoria" }`. A `pista` é uma única palavra relacionada (vista só pelo impostor); deixa `d: ""` para palavras sem pista.
+
+## Studio Mode
+
+Interruptor no ecrã inicial, desligado por omissão. Desligado é o jogo normal: a categoria **Amigos** (os nomes do pessoal do estúdio) e os gifs de quem começa ficam de fora. Ligado, entram. A escolha fica guardada no telemóvel; `?studio=1` no link liga-o logo.
 
 ## Stack
 
