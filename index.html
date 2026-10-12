@@ -212,13 +212,7 @@
         <div id="mp-random-box" class="hidden">
           <p class="muted center">Número de impostores sorteado (1 é o mais provável).</p>
         </div>
-        <label class="switch-row" id="mp-photo-toggle">
-          <div>
-            <div class="switch-title">Modo fotos 📸</div>
-            <div class="switch-sub">Em vez de dizer uma palavra, cada um envia uma foto e veem-se todas.</div>
-          </div>
-          <span class="switch"><span class="knob"></span></span>
-        </label>
+        <p class="hint-text" style="margin-top:14px">Cada ronda, cada um dá uma pista (escreve, foto ou gif). 2 rondas e depois vai a votos.</p>
       </div>
 
       <div class="spacer"></div>
@@ -241,12 +235,22 @@
       <div id="mp-round-foot"></div>
     </section>
 
-    <!-- ONLINE: galeria de fotos -->
-    <section class="screen" id="screen-mp-gallery">
-      <div class="reveal-progress">FOTOS DA RONDA</div>
-      <div class="gallery" id="mp-gallery"></div>
+    <!-- ONLINE: revelar as pistas uma a uma -->
+    <section class="screen" id="screen-mp-reveal">
+      <div class="reveal-progress" id="mp-reveal-prog">RONDA 1 / 2</div>
+      <div class="mp-reveal-name" id="mp-reveal-name">—</div>
+      <div class="mp-reveal-clue" id="mp-reveal-clue"></div>
       <div class="spacer"></div>
-      <div id="mp-gallery-foot"></div>
+      <div id="mp-reveal-foot"></div>
+    </section>
+
+    <!-- ONLINE: votação -->
+    <section class="screen" id="screen-mp-vote">
+      <div class="reveal-progress">VOTAÇÃO</div>
+      <h2 class="center" id="mp-vote-head">Quem é o impostor?</h2>
+      <div class="mp-vote-list" id="mp-vote-list"></div>
+      <div class="spacer"></div>
+      <div id="mp-vote-foot"></div>
     </section>
 
     <!-- ONLINE: resultado -->
@@ -257,6 +261,7 @@
         <div class="result-word" id="mp-result-word">—</div>
         <p class="muted top-gap">Impostor(es):</p>
         <div class="impostor-reveal" id="mp-impostor-names"></div>
+        <div id="mp-vote-result"></div>
       </div>
       <div id="mp-result-foot"></div>
       <button class="btn btn-ghost btn-big" id="btn-mp-leave">Sair da sala</button>

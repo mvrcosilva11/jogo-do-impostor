@@ -1,41 +1,25 @@
-/* mp.js — interface do modo multiplayer. Liga os ecrãs online ao online.js.
-   Reutiliza do app.js: showScreen, $, $$, escapeHtml, WORDS, isTrend,
-   weightedImpostorCount, shuffle. */
+/* mp.js — interface do multiplayer (v2). Liga os ecrãs ao online.js.
+   Fluxo: lobby → (compor pista → revelar uma a uma) ×2 → votar → resultado.
+   Pista = Escrever / Foto (upload) / Gif (Tenor). Reutiliza do app.js:
+   showScreen, $, $$, escapeHtml, WORDS, isTrend, wordBank, weightedImpostorCount, state. */
 (function () {
   "use strict";
-  var conn = null;          // Online.Host ou Online.Guest
-  var isHost = false;
-  var secret = Online.rid(16);
-  var pub = null, priv = null, photos = {};
-  var mySettings = { impMode: "manual", impCount: 1, photoMode: false, category: "all" };
+
+  // Cola aqui a tua API key do Tenor (Google) para ligar a pesquisa de gifs.
+  var TENOR_KEY = "";
+
+  var conn = null, isHost = false, secret = Online.rid(16);
+  var pub = null, priv = null, clues = {};
+  var mySettings = { impMode: "manual", impCount: 1, category: "all" };
 
   function el(id) { return document.getElementById(id); }
   function status(msg) { var s = el("mp-status"); if (s) s.textContent = msg || ""; }
-
-  // Guarda de re-render: só reconstrói o DOM quando o conteúdo muda. Evita que a
-  // batida de 2,5 s feche o card que estás a segurar ou troque botões a meio.
   var sig = {};
-  function changed(key, val) { if (sig[key] === val) return false; sig[key] = val; return true; }
+  function changed(k, v) { if (sig[k] === v) return false; sig[k] = v; return true; }
   function resetSig() { sig = {}; }
+  function showScreenIf(id) { var s = el(id); if (s && !s.classList.contains("active")) showScreen(id); }
 
-  // ── escolha de palavra (anfitrião) ──
-  // wordBank() (global, do app.js) devolve as palavras em jogo: sem atualidade e,
-  // com o Studio Mode desligado, sem a categoria "Amigos". O online respeita isso.
-  function pickOnlineWord() {
-    var pool = wordBank();
-    var w = pool[Math.floor(Math.random() * pool.length)];
-    var d = w.d;
-    if (w.r && w.r.length) d = w.r[Math.floor(Math.random() * w.r.length)];
-    return { p: w.p, d: d || "" };
-  }
-  function distinctHints() {
-    var seen = {}, out = [];
-    wordBank().forEach(function (w) { if (w.d && w.d.trim() && !seen[w.d]) { seen[w.d] = 1; out.push(w.d); } });
-    return out;
-  }
-  function maxImpMp(n) { return Math.max(1, Math.floor(n / 3)); }
-
-  // ── gifs do pessoal do estúdio (só com Studio Mode) ──
+  // ── gifs do estúdio (só com Studio Mode) ──
   var GIFKEYS = { alex: 1, freire: 1, marco: 1, nuno: 1, pinto: 1, rebelo: 1, santos: 1, vitor: 1 };
   function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim(); }
   function nameHasGif(name) { return norm(name).split(/\s+/).some(function (w) { return GIFKEYS[w]; }); }
@@ -59,7 +43,6 @@
       img.src = "gifs/" + encodeURIComponent(key) + ".gif";
     })();
   }
-  // mostra/esconde os avisos de gif conforme o Studio Mode (via atributo no body)
   function paintStudioAttr() { try { document.body.setAttribute("data-studio", studioOn() ? "1" : "0"); } catch (e) {} }
   function openGifModal() {
     var box = el("gif-names-list"); if (!box) return;
@@ -69,6 +52,19 @@
       : '<p class="muted">Sem nomes com gif.</p>';
     el("gif-modal").hidden = false;
   }
+
+  // ── palavra / pistas (anfitrião) ──
+  function pickOnlineWord() {
+    var pool = wordBank(), w = pool[Math.floor(Math.random() * pool.length)], d = w.d;
+    if (w.r && w.r.length) d = w.r[Math.floor(Math.random() * w.r.length)];
+    return { p: w.p, d: d || "" };
+  }
+  function distinctHints() {
+    var seen = {}, out = [];
+    wordBank().forEach(function (w) { if (w.d && w.d.trim() && !seen[w.d]) { seen[w.d] = 1; out.push(w.d); } });
+    return out;
+  }
+  function maxImpMp(n) { return Math.max(1, Math.floor(n / 3)); }
 
   // ── compressão de foto ──
   function compress(file, cb) {
@@ -80,21 +76,46 @@
       var c = document.createElement("canvas"); c.width = w; c.height = h;
       c.getContext("2d").drawImage(img, 0, 0, w, h);
       var q = 0.6, url = c.toDataURL("image/jpeg", q);
-      while (url.length > 800000 && q > 0.3) { q -= 0.1; url = c.toDataURL("image/jpeg", q); }
+      while (url.length > 700000 && q > 0.3) { q -= 0.1; url = c.toDataURL("image/jpeg", q); }
       cb(url);
     };
     img.onerror = function () { cb(null); };
-    var fr = new FileReader();
-    fr.onload = function (e) { img.src = e.target.result; };
-    fr.readAsDataURL(file);
+    var fr = new FileReader(); fr.onload = function (e) { img.src = e.target.result; }; fr.readAsDataURL(file);
+  }
+
+  // ── pesquisa de gifs (Tenor) ──
+  function tenorSearch(q, cb) {
+    if (!TENOR_KEY) { cb(null, "nokey"); return; }
+    var url = "https://tenor.googleapis.com/v2/search?q=" + encodeURIComponent(q) +
+      "&key=" + TENOR_KEY + "&client_key=jogo_impostor&limit=16&media_filter=tinygif,gif&contentfilter=medium";
+    fetch(url).then(function (r) { return r.json(); }).then(function (j) {
+      var list = (j.results || []).map(function (g) {
+        var mf = g.media_formats || {};
+        var small = (mf.tinygif && mf.tinygif.url) || (mf.gif && mf.gif.url);
+        return small ? { preview: small, url: small } : null;
+      }).filter(Boolean);
+      cb(list);
+    }).catch(function () { cb(null, "err"); });
+  }
+
+  // ── validação de pista-imagem ──
+  function okImg(v) { return typeof v === "string" && (/^data:image\/(png|jpe?g|gif|webp);base64,/.test(v) || /^https:\/\/[^\s"'<>]+$/.test(v)); }
+  function clueOf(round, id) {
+    var raw = clues[round + "/" + id]; if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+  function myPlayer() {
+    if (!pub) return null;
+    var id = priv && priv.pid;
+    for (var i = 0; i < pub.players.length; i++) if (pub.players[i].id === id) return pub.players[i];
+    return null;
   }
 
   // ── ligação ──
   function cbs() {
     return {
-      secret: secret,
-      name: (el("mp-name").value || "Jogador").trim().slice(0, 20),
-      onUpdate: function (p, mine, ph) { pub = p; priv = mine; photos = ph || photos; render(); },
+      secret: secret, name: (el("mp-name").value || "Jogador").trim().slice(0, 20),
+      onUpdate: function (p, mine, c) { pub = p; priv = mine; clues = c || clues; render(); },
       onNet: function (on) { var d = el("net-dot"); if (d) d.classList.toggle("on", on); },
       onFail: function (why) { fail(why); }
     };
@@ -102,41 +123,34 @@
   function fail(why) {
     var msg = { noroom: "Sala não encontrada.", closed: "A sala foi fechada.", full: "A sala já começou.", nojoin: "Não foi possível entrar.", offline: "Sem ligação ao servidor." };
     if (conn) { try { conn.close(); } catch (e) {} conn = null; }
-    status(msg[why] || "Erro de ligação.");
-    showScreen("screen-online");
+    status(msg[why] || "Erro de ligação."); showScreen("screen-online");
   }
   function create() {
     if (!el("mp-name").value.trim()) { status("Escreve o teu nome primeiro."); el("mp-name").focus(); return; }
     isHost = true; status("A criar sala…"); resetSig();
     conn = new Online.Host(cbs());
-    conn.open(function (err, code) {
-      if (err) { fail("offline"); return; }
-      status(""); showScreen("screen-lobby");
-    });
+    conn.open(function (err) { if (err) { fail("offline"); return; } status(""); showScreen("screen-lobby"); });
   }
   function join() {
     var code = Online.normCode(el("mp-code").value);
     if (!el("mp-name").value.trim()) { status("Escreve o teu nome primeiro."); el("mp-name").focus(); return; }
     if (code.length !== 4) { status("O código tem 4 letras."); return; }
     isHost = false; status("A entrar…"); resetSig();
-    var o = cbs(); o.room = code;
-    conn = new Online.Guest(o);
-    conn.open();
-    showScreen("screen-lobby");
+    var o = cbs(); o.room = code; conn = new Online.Guest(o); conn.open(); showScreen("screen-lobby");
   }
   function leave() {
     if (conn) { try { conn.close(true); } catch (e) {} conn = null; }
-    pub = priv = null; photos = {}; resetSig();
-    showScreen("screen-online"); status("");
+    pub = priv = null; clues = {}; resetSig(); showScreen("screen-online"); status("");
   }
 
-  // ── render por fase ──
+  // ── router ──
   function render() {
     if (!pub) return;
     var ph = pub.phase;
     if (ph === "lobby") renderLobby();
-    else if (ph === "play" || ph === "photos") renderRound();
-    else if (ph === "gallery") renderGallery();
+    else if (ph === "clue") renderClue();
+    else if (ph === "reveal") renderReveal();
+    else if (ph === "vote") renderVote();
     else if (ph === "result") renderResult();
   }
 
@@ -148,182 +162,214 @@
     el("lobby-code").textContent = pub.room || "----";
     el("lobby-count").textContent = n + (n === 1 ? " jogador" : " jogadores");
     var box = el("lobby-players"); box.innerHTML = "";
-    pub.players.forEach(function (p) {
-      var d = document.createElement("div"); d.className = "mp-player";
-      d.textContent = p.n + (p.id === pub.host ? " 👑" : "");
-      box.appendChild(d);
-    });
-    // só o anfitrião vê as opções e o botão começar
+    pub.players.forEach(function (p) { var d = document.createElement("div"); d.className = "mp-player"; d.textContent = p.n + (p.id === pub.host ? " 👑" : ""); box.appendChild(d); });
     el("lobby-host").style.display = isHost ? "block" : "none";
     el("btn-lobby-start").style.display = isHost ? "flex" : "none";
     el("lobby-wait").style.display = isHost ? "none" : "block";
     if (isHost) {
       el("mp-imp-max").textContent = maxImpMp(n);
-      if (mySettings.impCount > maxImpMp(n)) { mySettings.impCount = maxImpMp(n); }
+      if (mySettings.impCount > maxImpMp(n)) mySettings.impCount = maxImpMp(n);
       el("mp-imp-count").textContent = mySettings.impCount;
       el("btn-lobby-start").disabled = n < 3;
     }
   }
 
-  function renderRound() {
-    showScreenIf("screen-mp-round");
+  // ── card do papel (partilhado) ──
+  function renderRoleCard() {
     var me = myPlayer();
-    // verso (papel): só reconstrói quando o papel muda — assim o card não fecha
-    // sozinho a cada batida enquanto o seguras.
     var roleSig = priv ? (priv.gid + "|" + priv.role + "|" + (priv.word || "") + "|" + (priv.hint || "")) : "none";
-    if (changed("round-role", roleSig)) {
-      el("mp-myname").textContent = me ? me.n : "—";
-      var back = el("mp-back");
-      if (priv && priv.role === "impostor") {
-        back.className = "card-face card-back is-impostor";
-        var h = priv.hint && priv.hint.trim();
-        back.innerHTML = '<div class="role-label">A tua palavra</div><div class="the-word">Impostor</div><div class="the-hint">🤫 ' + (h ? "Pista: " + escapeHtml(priv.hint) : "Sem pista — desenrasca-te! 😅") + "</div>";
-      } else if (priv && priv.role === "word") {
-        back.className = "card-face card-back is-word";
-        back.innerHTML = '<div class="role-label">A tua palavra</div><div class="the-word">' + escapeHtml(priv.word || "—") + "</div>";
-      } else {
-        back.className = "card-face card-back is-word";
-        back.innerHTML = '<div class="the-hint">A carregar…</div>';
-      }
-      el("mp-card").classList.remove("flipped");  // reset só em ronda nova
-    }
-    // rodapé: reconstrói só quando muda a fase / quem começa / fotos enviadas
-    var meph = me && me.ph ? 1 : 0;
-    var done = pub.players.filter(function (p) { return p.ph; }).length;
-    var footSig = pub.phase + "|" + (pub.starter || "") + "|" + isHost + "|" + meph + "|" + done + "/" + pub.players.length;
-    if (changed("round-foot", footSig)) {
-      var foot = el("mp-round-foot");
-      if (pub.phase === "photos") { foot.innerHTML = photoFoot(); bindPhoto(); }
-      else { foot.innerHTML = playFoot(); renderGif(el("mp-starter-gif"), pub.starter); }
-      bindHostFoot();
-    }
-  }
-
-  function playFoot() {
-    var s = '<div class="play-foot"><p class="muted">Começa a dizer a palavra:</p><div class="starter">' + escapeHtml(pub.starter || "—") + "</div>";
-    s += '<div class="starter-gif" id="mp-starter-gif"></div>';
-    s += '<p class="hint-text">Cada um diz uma palavra relacionada. Debatam e votem no impostor.</p>';
-    if (isHost) s += '<button class="btn btn-pink btn-big" data-act="reveal">Revelar impostor(es)</button>';
-    else s += '<p class="hint-text">O anfitrião revela quando terminarem.</p>';
-    return s + "</div>";
-  }
-
-  function photoFoot() {
-    var me = myPlayer(), sent = me && me.ph;
-    var s = '<div class="play-foot">';
-    if (!sent) {
-      s += '<p class="muted">Envia uma foto como pista:</p>';
-      s += '<label class="btn btn-pink btn-big" for="mp-photo-input">📸 Escolher foto</label>';
-      s += '<input type="file" id="mp-photo-input" accept="image/*" hidden />';
+    if (!changed("role", roleSig)) return;
+    el("mp-myname").textContent = me ? me.n : "—";
+    var back = el("mp-back");
+    if (priv && priv.role === "impostor") {
+      back.className = "card-face card-back is-impostor";
+      var h = priv.hint && priv.hint.trim();
+      back.innerHTML = '<div class="role-label">A tua palavra</div><div class="the-word">Impostor</div><div class="the-hint">🤫 ' + (h ? "Pista: " + escapeHtml(priv.hint) : "Sem pista — desenrasca-te! 😅") + "</div>";
+    } else if (priv && priv.role === "word") {
+      back.className = "card-face card-back is-word";
+      back.innerHTML = '<div class="role-label">A tua palavra</div><div class="the-word">' + escapeHtml(priv.word || "—") + "</div>";
     } else {
-      var have = pub.players.filter(function (p) { return p.ph; }).length;
-      s += '<p class="muted">Foto enviada ✓</p><p class="hint-text">' + have + " / " + pub.players.length + " enviaram.</p>";
+      back.className = "card-face card-back is-word";
+      back.innerHTML = '<div class="the-hint">A carregar…</div>';
     }
-    if (isHost) {
-      var all = pub.players.every(function (p) { return p.ph; });
-      s += '<button class="btn btn-dark btn-big" data-act="gallery"' + (all ? "" : " disabled") + ">Ver fotos" + (all ? "" : " (à espera)") + "</button>";
-    } else if (sent) {
-      s += '<p class="hint-text">À espera que o anfitrião mostre as fotos.</p>';
-    }
-    return s + "</div>";
+    el("mp-card").classList.remove("flipped");
   }
 
-  function renderGallery() {
-    showScreenIf("screen-mp-gallery");
-    var gsig = pub.players.map(function (p) { return p.id + (photos[p.id] ? "1" : "0"); }).join(",") + "|" + isHost;
-    if (!changed("gallery", gsig)) return;
-    var g = el("mp-gallery"); g.innerHTML = "";
-    pub.players.forEach(function (p) {
-      var cell = document.createElement("div"); cell.className = "gcell";
-      var src = photos[p.id];
-      var ok = src && /^data:image\/(png|jpe?g|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(src);
-      cell.innerHTML = (ok ? '<img src="' + src + '" alt="">' : '<div class="gph">a enviar…</div>') + '<span class="gname">' + escapeHtml(p.n) + "</span>";
-      g.appendChild(cell);
+  // ── fase: compor pista ──
+  function renderClue() {
+    showScreenIf("screen-mp-round");
+    el("mp-round-head").textContent = "RONDA " + pub.round + " / " + pub.maxRounds + " · A TUA PISTA";
+    renderRoleCard();
+    var me = myPlayer(), subd = me && me.sub, cnt = pub.players.filter(function (p) { return p.sub; }).length;
+    var sg = pub.round + "|" + (subd ? "S" + cnt + "|" + isHost : "C");
+    if (!changed("clue-foot", sg)) return;
+    var foot = el("mp-round-foot");
+    if (subd) {
+      var s = '<div class="play-foot"><p class="muted">Pista enviada ✓</p><p class="hint-text">' + cnt + " / " + pub.players.length + " enviaram.</p>";
+      if (isHost) s += '<button class="btn btn-dark btn-big" data-act="force-reveal">Avançar já →</button>';
+      else s += '<p class="hint-text">À espera dos outros…</p>';
+      foot.innerHTML = s + "</div>"; bindHostFoot();
+    } else {
+      foot.innerHTML = composerHTML(); bindComposer();
+    }
+  }
+
+  function composerHTML() {
+    return '<div class="composer">' +
+      '<div class="comp-tabs">' +
+        '<button class="comp-tab active" data-tab="text">✍️ Escrever</button>' +
+        '<button class="comp-tab" data-tab="photo">📷 Foto</button>' +
+        '<button class="comp-tab" data-tab="gif">🔍 Gif</button>' +
+      '</div>' +
+      '<div class="comp-panel" data-panel="text">' +
+        '<input id="comp-text" class="write-box" placeholder="escreve a tua pista…" maxlength="40" autocomplete="off" />' +
+        '<button class="btn btn-pink btn-big" id="comp-send-text">Enviar pista</button>' +
+      '</div>' +
+      '<div class="comp-panel hidden" data-panel="photo">' +
+        '<label class="btn btn-pink btn-big" for="comp-file">📷 Escolher foto</label>' +
+        '<input type="file" id="comp-file" accept="image/*" hidden />' +
+      '</div>' +
+      '<div class="comp-panel hidden" data-panel="gif">' +
+        '<div class="gif-search"><input id="comp-gif-q" class="write-box" placeholder="procurar gif…" autocomplete="off" /><button class="btn btn-dark" id="comp-gif-go">🔍</button></div>' +
+        '<div class="gif-results" id="comp-gif-results"></div>' +
+      '</div>' +
+    "</div>";
+  }
+
+  function bindComposer() {
+    $$("#mp-round-foot .comp-tab").forEach(function (b) {
+      b.onclick = function () {
+        var t = b.getAttribute("data-tab");
+        $$("#mp-round-foot .comp-tab").forEach(function (x) { x.classList.toggle("active", x === b); });
+        $$("#mp-round-foot .comp-panel").forEach(function (p) { p.classList.toggle("hidden", p.getAttribute("data-panel") !== t); });
+      };
     });
-    var foot = el("mp-gallery-foot");
+    var sendText = el("comp-send-text");
+    if (sendText) sendText.onclick = function () {
+      var v = (el("comp-text").value || "").trim();
+      if (!v) { el("comp-text").focus(); return; }
+      conn.submitClue({ ty: "t", v: v });
+    };
+    var file = el("comp-file");
+    if (file) file.onchange = function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      el("mp-round-foot").innerHTML = '<div class="play-foot"><p class="muted">A enviar foto…</p></div>';
+      compress(f, function (url) { if (url) conn.submitClue({ ty: "i", v: url }); else renderClue(); });
+    };
+    var go = el("comp-gif-go");
+    if (go) go.onclick = runGifSearch;
+    var q = el("comp-gif-q");
+    if (q) q.onkeydown = function (e) { if (e.key === "Enter") runGifSearch(); };
+  }
+
+  function runGifSearch() {
+    var q = (el("comp-gif-q").value || "").trim(), res = el("comp-gif-results");
+    if (!q) return;
+    res.innerHTML = '<p class="hint-text">A procurar…</p>';
+    tenorSearch(q, function (list, errc) {
+      if (errc === "nokey") { res.innerHTML = '<p class="hint-text">Pesquisa de gifs ainda não configurada (falta a chave Tenor). Usa Escrever ou Foto.</p>'; return; }
+      if (!list || !list.length) { res.innerHTML = '<p class="hint-text">Sem resultados.</p>'; return; }
+      res.innerHTML = "";
+      list.forEach(function (g) {
+        var im = new Image(); im.className = "gif-pick"; im.src = g.preview; im.alt = "";
+        im.onclick = function () { conn.submitClue({ ty: "i", v: g.url }); };
+        res.appendChild(im);
+      });
+    });
+  }
+
+  // ── fase: revelar uma a uma ──
+  function renderReveal() {
+    showScreenIf("screen-mp-reveal");
+    var rv = pub.reveal || {}; var id = rv.id;
+    var p = null; for (var i = 0; i < pub.players.length; i++) if (pub.players[i].id === id) p = pub.players[i];
+    var cl = clueOf(rv.round, id);
+    var rsig = pub.round + "|" + rv.idx + "|" + id + "|" + (cl ? cl.ty + cl.v.slice(0, 24) : "none") + "|" + isHost;
+    if (!changed("reveal", rsig)) return;
+    el("mp-reveal-prog").textContent = "RONDA " + rv.round + " / " + pub.maxRounds + " · PISTA " + (rv.idx + 1) + " / " + rv.total;
+    el("mp-reveal-name").textContent = p ? p.n : "—";
+    var box = el("mp-reveal-clue"); box.innerHTML = "";
+    if (!cl) { box.innerHTML = '<p class="hint-text">a receber a pista…</p>'; }
+    else if (cl.ty === "i" && okImg(cl.v)) { var im = new Image(); im.className = "clue-img"; im.src = cl.v; im.alt = ""; box.appendChild(im); }
+    else if (cl.ty === "t") { var d = document.createElement("div"); d.className = "clue-text"; d.textContent = cl.v; box.appendChild(d); }
+    else { box.innerHTML = '<p class="hint-text">pista inválida</p>'; }
+    var foot = el("mp-reveal-foot");
+    var last = rv.idx + 1 >= rv.total, lastRound = pub.round >= pub.maxRounds;
     foot.innerHTML = isHost
-      ? '<button class="btn btn-pink btn-big" data-act="reveal">Revelar impostor(es)</button>'
-      : '<p class="hint-text">Debatam e votem. O anfitrião revela no fim.</p>';
+      ? '<button class="btn btn-dark btn-big" data-act="next">' + (last ? (lastRound ? "Ir a votos →" : "Ronda seguinte →") : "Próxima pista →") + "</button>"
+      : '<p class="hint-text">O anfitrião avança.</p>';
     bindHostFoot();
   }
 
+  // ── fase: votação ──
+  function renderVote() {
+    showScreenIf("screen-mp-vote");
+    var me = myPlayer(), voted = me && me.voted, cnt = pub.players.filter(function (p) { return p.voted; }).length;
+    var vsig = (voted ? "V" + cnt : "v") + "|" + isHost + "|" + pub.players.map(function (p) { return p.id; }).join(",");
+    if (!changed("vote", vsig)) return;
+    var box = el("mp-vote-list"); box.innerHTML = "";
+    if (!voted) {
+      pub.players.forEach(function (p) {
+        if (priv && p.id === priv.pid) return; // não votas em ti
+        var b = document.createElement("button"); b.className = "btn btn-ghost vote-btn"; b.textContent = p.n;
+        b.onclick = function () { conn.vote(p.id); };
+        box.appendChild(b);
+      });
+    }
+    el("mp-vote-head").textContent = voted ? "Voto registado ✓" : "Quem é o impostor?";
+    var foot = el("mp-vote-foot");
+    var s = voted ? '<p class="hint-text">' + cnt + " / " + pub.players.length + " votaram.</p>" : "";
+    if (isHost) s += '<button class="btn btn-dark btn-big" data-act="force-vote">Fechar votação →</button>';
+    foot.innerHTML = s; bindHostFoot();
+  }
+
+  // ── fase: resultado ──
   function renderResult() {
     showScreenIf("screen-mp-result");
     var r = pub.result || {};
     if (!changed("result", pub.gid + "|" + JSON.stringify(r) + "|" + isHost)) return;
-    if (r.allImp || !r.word) {
-      el("mp-result-label").textContent = "Não havia palavra:";
-      el("mp-result-word").textContent = "Eram todos impostores! 🤯";
-    } else {
-      el("mp-result-label").textContent = "A palavra era:";
-      el("mp-result-word").textContent = r.word;
-    }
+    if (r.allImp || !r.word) { el("mp-result-label").textContent = "Não havia palavra:"; el("mp-result-word").textContent = "Eram todos impostores! 🤯"; }
+    else { el("mp-result-label").textContent = "A palavra era:"; el("mp-result-word").textContent = r.word; }
     var box = el("mp-impostor-names"); box.innerHTML = "";
-    (r.imps || []).forEach(function (nm) {
-      var d = document.createElement("div"); d.className = "imp"; d.textContent = "🕵️ " + nm; box.appendChild(d);
-    });
+    (r.imps || []).forEach(function (nm) { var d = document.createElement("div"); d.className = "imp"; d.textContent = "🕵️ " + nm; box.appendChild(d); });
+    // veredicto da votação
+    var caught = (r.top || []).some(function (nm) { return (r.imps || []).indexOf(nm) >= 0; });
+    var vd = el("mp-vote-result");
+    var topStr = (r.top || []).join(", ") || "—";
+    vd.innerHTML = '<p class="muted top-gap">Mais votado: <b>' + escapeHtml(topStr) + "</b></p>" +
+      '<p class="verdict">' + (caught ? "Apanharam o impostor! 🎉" : "O impostor escapou! 🤫") + "</p>";
     el("mp-result-foot").innerHTML = isHost
       ? '<button class="btn btn-dark btn-big" data-act="again">Jogar novamente</button><button class="btn btn-ghost btn-big" data-act="lobby">Voltar à sala</button>'
-      : '<p class="hint-text">À espera do anfitrião para a próxima ronda…</p>';
+      : '<p class="hint-text">À espera do anfitrião…</p>';
     bindHostFoot();
   }
 
-  // ── helpers ──
-  function myPlayer() {
-    if (!pub) return null;
-    var id = priv && priv.pid;
-    for (var i = 0; i < pub.players.length; i++) if (pub.players[i].id === id) return pub.players[i];
-    return null;
-  }
-  // evita re-mostrar (e perder foco/estado) se já estamos no ecrã certo
-  function showScreenIf(id) { var s = el(id); if (!s.classList.contains("active")) showScreen(id); }
-
-  function hostStart() {
-    if (!isHost || !conn.G) return;
-    var n = conn.G.players.length;
-    if (n < 3) { return; }
-    conn.setSettings(mySettings);
-    var allImp = false, impCount = 1;
-    if (mySettings.impMode === "random") {
-      var k = weightedImpostorCount(n);
-      if (k >= n) allImp = true; else impCount = k;
-    } else {
-      impCount = Math.min(mySettings.impCount, maxImpMp(n));
-    }
-    conn.startRound({
-      word: allImp ? null : pickOnlineWord(),
-      allImp: allImp, impCount: impCount,
-      allHints: allImp ? distinctHints() : null
-    });
-  }
-
+  // ── controlos do anfitrião ──
   function bindHostFoot() {
-    $$("#mp-round-foot [data-act], #mp-gallery-foot [data-act], #mp-result-foot [data-act]").forEach(function (b) {
+    $$("#mp-round-foot [data-act], #mp-reveal-foot [data-act], #mp-vote-foot [data-act], #mp-result-foot [data-act]").forEach(function (b) {
       b.onclick = function () {
         var a = b.getAttribute("data-act");
-        if (a === "reveal") conn.reveal();
-        else if (a === "gallery") conn.toGallery();
+        if (a === "force-reveal") conn.forceReveal();
+        else if (a === "next") conn.nextReveal();
+        else if (a === "force-vote") conn.forceVote();
         else if (a === "again") hostStart();
         else if (a === "lobby") conn.backToLobby();
       };
     });
   }
 
-  function bindPhoto() {
-    var inp = el("mp-photo-input");
-    if (!inp) return;
-    inp.onchange = function () {
-      var f = inp.files && inp.files[0]; if (!f) return;
-      status("");
-      var foot = el("mp-round-foot"); foot.innerHTML = '<div class="play-foot"><p class="muted">A enviar foto…</p></div>';
-      compress(f, function (url) {
-        if (!url) { renderRound(); return; }
-        conn.uploadPhoto(url);
-      });
-    };
+  function hostStart() {
+    if (!isHost || !conn.G) return;
+    var n = conn.G.players.length; if (n < 3) return;
+    conn.setSettings(mySettings);
+    var allImp = false, impCount = 1;
+    if (mySettings.impMode === "random") { var k = weightedImpostorCount(n); if (k >= n) allImp = true; else impCount = k; }
+    else impCount = Math.min(mySettings.impCount, maxImpMp(n));
+    resetSig();
+    conn.startGame({ word: allImp ? null : pickOnlineWord(), allImp: allImp, impCount: impCount, allHints: allImp ? distinctHints() : null });
   }
 
-  // ── card: pressionar e manter para revelar ──
+  // ── card: pressionar e manter para ver o papel ──
   function bindCard() {
     var card = el("mp-card"), front = el("mp-front");
     var show = function (e) { e.preventDefault(); card.classList.add("flipped"); };
@@ -335,14 +381,14 @@
     card.addEventListener("contextmenu", function (e) { e.preventDefault(); });
   }
 
-  // ── setup ──
+  // ── partilhar sala ──
   function flashShare(msg) { var b = el("btn-share"); if (!b) return; var t = b.getAttribute("data-label") || b.textContent; b.setAttribute("data-label", t); b.textContent = msg; setTimeout(function () { b.textContent = t; }, 1600); }
   function shareRoom() {
     var code = pub && pub.room; if (!code) return;
     var url = location.origin + location.pathname + "?sala=" + code;
     if (navigator.share) { navigator.share({ title: "Jogo do Impostor", text: "Entra na minha sala: " + code, url: url }).catch(function () {}); return; }
-    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function () { flashShare("Link copiado ✓"); }, function () { window.prompt("Copia o link da sala:", url); }); }
-    else window.prompt("Copia o link da sala:", url);
+    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function () { flashShare("Link copiado ✓"); }, function () { window.prompt("Copia o link:", url); }); }
+    else window.prompt("Copia o link:", url);
   }
 
   function setup() {
@@ -354,7 +400,6 @@
     el("btn-mp-leave").addEventListener("click", leave);
     el("btn-lobby-start").addEventListener("click", hostStart);
 
-    // opções do anfitrião no lobby
     $$("#lobby-host [data-mpmode]").forEach(function (b) {
       b.addEventListener("click", function () {
         mySettings.impMode = b.getAttribute("data-mpmode");
@@ -368,34 +413,20 @@
       var n = conn && conn.G ? conn.G.players.length : 3;
       if (mySettings.impCount < maxImpMp(n)) { mySettings.impCount++; renderLobby(); }
     });
-    el("mp-photo-toggle").addEventListener("click", function () {
-      mySettings.photoMode = !mySettings.photoMode;
-      el("mp-photo-toggle").classList.toggle("on", mySettings.photoMode);
-    });
 
     bindCard();
-
-    // Partilhar o link da sala
     el("btn-share").addEventListener("click", shareRoom);
-
-    // Botão(ões) de info "ver nomes" + modal dos nomes com gif
     $$("[data-gifinfo]").forEach(function (b) { b.addEventListener("click", openGifModal); });
     el("gif-modal-close").addEventListener("click", function () { el("gif-modal").hidden = true; });
     el("gif-modal").addEventListener("click", function (e) { if (e.target === el("gif-modal")) el("gif-modal").hidden = true; });
 
-    // Avisos de gif só com Studio Mode: acompanha o interruptor do app.js
     paintStudioAttr();
     var st = el("studio-toggle");
     if (st) { st.addEventListener("click", function () { setTimeout(paintStudioAttr, 0); }); st.addEventListener("keydown", function () { setTimeout(paintStudioAttr, 0); }); }
 
-    // Deep-link: ?sala=CÓDIGO abre o online com o código preenchido
     var room = new URLSearchParams(location.search).get("sala");
-    if (room) {
-      room = Online.normCode(room);
-      if (room.length === 4) { el("mp-code").value = room; showScreen("screen-online"); setTimeout(function () { el("mp-name").focus(); }, 80); }
-    }
+    if (room) { room = Online.normCode(room); if (room.length === 4) { el("mp-code").value = room; showScreen("screen-online"); setTimeout(function () { el("mp-name").focus(); }, 80); } }
 
-    // iOS mata o socket em 2.º plano → religa ao voltar
     document.addEventListener("visibilitychange", function () { if (!document.hidden && conn) conn.check(); });
     window.addEventListener("pagehide", function () { if (conn) { try { conn.close(true); } catch (e) {} } });
   }
