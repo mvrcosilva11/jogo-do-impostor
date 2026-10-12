@@ -35,6 +35,41 @@
   }
   function maxImpMp(n) { return Math.max(1, Math.floor(n / 3)); }
 
+  // ── gifs do pessoal do estúdio (só com Studio Mode) ──
+  var GIFKEYS = { alex: 1, freire: 1, marco: 1, nuno: 1, pinto: 1, rebelo: 1, santos: 1, vitor: 1 };
+  function norm(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim(); }
+  function nameHasGif(name) { return norm(name).split(/\s+/).some(function (w) { return GIFKEYS[w]; }); }
+  function studioOn() { return typeof state !== "undefined" && state.studio; }
+  function gifNames() {
+    var bank = typeof WORDS !== "undefined" ? WORDS : [];
+    return bank.filter(function (w) { return w.c === "Amigos" && nameHasGif(w.p); }).map(function (w) { return w.p; });
+  }
+  function renderGif(holder, name) {
+    if (!holder) return;
+    holder.innerHTML = ""; holder.style.display = "none";
+    if (!name || !studioOn()) return;
+    var cands = norm(name).split(/\s+/).filter(Boolean).concat([norm(name).replace(/\s+/g, "")]);
+    var i = 0;
+    (function tryNext() {
+      if (i >= cands.length) return;
+      var key = cands[i++], img = new Image();
+      img.className = "starter-gif-img"; img.alt = "";
+      img.onload = function () { holder.innerHTML = ""; holder.appendChild(img); holder.style.display = "block"; };
+      img.onerror = tryNext;
+      img.src = "gifs/" + encodeURIComponent(key) + ".gif";
+    })();
+  }
+  // mostra/esconde os avisos de gif conforme o Studio Mode (via atributo no body)
+  function paintStudioAttr() { try { document.body.setAttribute("data-studio", studioOn() ? "1" : "0"); } catch (e) {} }
+  function openGifModal() {
+    var box = el("gif-names-list"); if (!box) return;
+    var names = gifNames();
+    box.innerHTML = names.length
+      ? names.map(function (nm) { return '<span class="gif-name-chip">' + escapeHtml(nm) + "</span>"; }).join("")
+      : '<p class="muted">Sem nomes com gif.</p>';
+    el("gif-modal").hidden = false;
+  }
+
   // ── compressão de foto ──
   function compress(file, cb) {
     var img = new Image();
@@ -159,13 +194,14 @@
     if (changed("round-foot", footSig)) {
       var foot = el("mp-round-foot");
       if (pub.phase === "photos") { foot.innerHTML = photoFoot(); bindPhoto(); }
-      else { foot.innerHTML = playFoot(); }
+      else { foot.innerHTML = playFoot(); renderGif(el("mp-starter-gif"), pub.starter); }
       bindHostFoot();
     }
   }
 
   function playFoot() {
     var s = '<div class="play-foot"><p class="muted">Começa a dizer a palavra:</p><div class="starter">' + escapeHtml(pub.starter || "—") + "</div>";
+    s += '<div class="starter-gif" id="mp-starter-gif"></div>';
     s += '<p class="hint-text">Cada um diz uma palavra relacionada. Debatam e votem no impostor.</p>';
     if (isHost) s += '<button class="btn btn-pink btn-big" data-act="reveal">Revelar impostor(es)</button>';
     else s += '<p class="hint-text">O anfitrião revela quando terminarem.</p>';
@@ -300,6 +336,15 @@
   }
 
   // ── setup ──
+  function flashShare(msg) { var b = el("btn-share"); if (!b) return; var t = b.getAttribute("data-label") || b.textContent; b.setAttribute("data-label", t); b.textContent = msg; setTimeout(function () { b.textContent = t; }, 1600); }
+  function shareRoom() {
+    var code = pub && pub.room; if (!code) return;
+    var url = location.origin + location.pathname + "?sala=" + code;
+    if (navigator.share) { navigator.share({ title: "Jogo do Impostor", text: "Entra na minha sala: " + code, url: url }).catch(function () {}); return; }
+    if (navigator.clipboard) { navigator.clipboard.writeText(url).then(function () { flashShare("Link copiado ✓"); }, function () { window.prompt("Copia o link da sala:", url); }); }
+    else window.prompt("Copia o link da sala:", url);
+  }
+
   function setup() {
     el("btn-online").addEventListener("click", function () { status(""); showScreen("screen-online"); });
     el("btn-create").addEventListener("click", create);
@@ -329,6 +374,26 @@
     });
 
     bindCard();
+
+    // Partilhar o link da sala
+    el("btn-share").addEventListener("click", shareRoom);
+
+    // Botão(ões) de info "ver nomes" + modal dos nomes com gif
+    $$("[data-gifinfo]").forEach(function (b) { b.addEventListener("click", openGifModal); });
+    el("gif-modal-close").addEventListener("click", function () { el("gif-modal").hidden = true; });
+    el("gif-modal").addEventListener("click", function (e) { if (e.target === el("gif-modal")) el("gif-modal").hidden = true; });
+
+    // Avisos de gif só com Studio Mode: acompanha o interruptor do app.js
+    paintStudioAttr();
+    var st = el("studio-toggle");
+    if (st) { st.addEventListener("click", function () { setTimeout(paintStudioAttr, 0); }); st.addEventListener("keydown", function () { setTimeout(paintStudioAttr, 0); }); }
+
+    // Deep-link: ?sala=CÓDIGO abre o online com o código preenchido
+    var room = new URLSearchParams(location.search).get("sala");
+    if (room) {
+      room = Online.normCode(room);
+      if (room.length === 4) { el("mp-code").value = room; showScreen("screen-online"); setTimeout(function () { el("mp-name").focus(); }, 80); }
+    }
 
     // iOS mata o socket em 2.º plano → religa ao voltar
     document.addEventListener("visibilitychange", function () { if (!document.hidden && conn) conn.check(); });

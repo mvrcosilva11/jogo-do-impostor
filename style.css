@@ -284,3 +284,17 @@ h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
 .gcell img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gph { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-weight: 700; font-size: 0.85rem; }
 .gname { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(transparent, #000a); color: #fff; font-weight: 800; font-size: 0.85rem; padding: 14px 8px 6px; text-align: center; }
+
+/* ─── Avisos de gif + modal de nomes + partilhar sala ─── */
+#btn-share { width: 100%; max-width: 340px; margin: 2px auto 12px; font-size: 0.95rem; padding: 12px; }
+
+.gif-note { display: none; font-size: 0.82rem; font-weight: 650; color: #7a5c00; background: #fff3c4; border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; line-height: 1.45; }
+body[data-studio="1"] .gif-note { display: block; }
+.gif-info-btn { background: none; border: none; color: var(--ink, #0a0a0a); font-weight: 850; text-decoration: underline; cursor: pointer; font-family: inherit; font-size: 0.82rem; padding: 0; }
+
+.gif-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
+.gif-modal[hidden] { display: none; }
+.gif-modal-card { background: var(--bg, #ececec); border-radius: 24px; padding: 24px; max-width: 420px; width: 100%; box-shadow: var(--shadow); max-height: 80dvh; overflow-y: auto; }
+.gif-modal-card h3 { font-size: 1.35rem; font-weight: 850; margin-bottom: 6px; }
+.gif-names-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.gif-name-chip { background: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 0.9rem; box-shadow: var(--shadow); }

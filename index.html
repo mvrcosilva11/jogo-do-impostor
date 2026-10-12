@@ -53,6 +53,7 @@
         <h2>Jogadores</h2>
       </header>
       <p class="muted">Adiciona os nomes — mínimo 3.</p>
+      <p class="gif-note">⚠️ Para aparecer o gif de quem começa, escreve o nome <b>exatamente como na lista</b>. <button type="button" class="gif-info-btn" data-gifinfo>ver nomes</button></p>
       <div id="players-list" class="players-list"></div>
       <button class="btn btn-ghost" id="btn-add-player">+ Adicionar jogador</button>
       <div class="spacer"></div>
@@ -177,6 +178,7 @@
       </header>
       <p class="muted">Cria uma sala e partilha o código, ou entra com um código.</p>
       <div class="player-row"><input id="mp-name" type="text" placeholder="O teu nome" autocomplete="off" autocapitalize="words" /></div>
+      <p class="gif-note">⚠️ Para apareceres com o teu gif, escreve o nome <b>exatamente como na lista</b>. <button type="button" class="gif-info-btn" data-gifinfo>ver nomes</button></p>
       <button class="btn btn-dark btn-big" id="btn-create">Criar sala</button>
       <div class="or-sep"><span>ou</span></div>
       <div class="player-row"><input id="mp-code" class="code-input" type="text" placeholder="CÓDIGO" maxlength="4" autocomplete="off" autocapitalize="characters" /></div>
@@ -191,6 +193,7 @@
         <div class="lobby-code" id="lobby-code">----</div>
         <p class="muted center" id="lobby-count">0 jogadores</p>
       </div>
+      <button class="btn btn-ghost" id="btn-share">🔗 Partilhar link da sala</button>
       <div class="mp-players" id="lobby-players"></div>
 
       <div id="lobby-host">
@@ -258,6 +261,16 @@
       <div id="mp-result-foot"></div>
       <button class="btn btn-ghost btn-big" id="btn-mp-leave">Sair da sala</button>
     </section>
+
+    <!-- Modal: nomes com gif -->
+    <div class="gif-modal" id="gif-modal" hidden>
+      <div class="gif-modal-card">
+        <h3>Nomes com gif 🎬</h3>
+        <p class="muted">Escreve o nome <b>exatamente assim</b> para o gif aparecer quando fores tu a começar.</p>
+        <div class="gif-names-list" id="gif-names-list"></div>
+        <button class="btn btn-dark btn-big" id="gif-modal-close">Fechar</button>
+      </div>
+    </div>
 
   </main>
 
