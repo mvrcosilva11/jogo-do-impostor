@@ -218,20 +218,16 @@
     return '<div class="composer">' +
       '<div class="comp-tabs">' +
         '<button class="comp-tab active" data-tab="text">✍️ Escrever</button>' +
-        '<button class="comp-tab" data-tab="photo">📷 Foto</button>' +
-        '<button class="comp-tab" data-tab="gif">🔍 Gif</button>' +
+        '<button class="comp-tab" data-tab="photo">📷 Foto / Gif</button>' +
       '</div>' +
       '<div class="comp-panel" data-panel="text">' +
         '<input id="comp-text" class="write-box" placeholder="escreve a tua pista…" maxlength="40" autocomplete="off" />' +
         '<button class="btn btn-pink btn-big" id="comp-send-text">Enviar pista</button>' +
       '</div>' +
       '<div class="comp-panel hidden" data-panel="photo">' +
-        '<label class="btn btn-pink btn-big" for="comp-file">📷 Escolher foto</label>' +
+        '<label class="btn btn-pink btn-big" for="comp-file">📷 Escolher do telemóvel</label>' +
         '<input type="file" id="comp-file" accept="image/*" hidden />' +
-      '</div>' +
-      '<div class="comp-panel hidden" data-panel="gif">' +
-        '<div class="gif-search"><input id="comp-gif-q" class="write-box" placeholder="procurar gif…" autocomplete="off" /><button class="btn btn-dark" id="comp-gif-go">🔍</button></div>' +
-        '<div class="gif-results" id="comp-gif-results"></div>' +
+        '<p class="hint-text">Podes escolher uma foto ou um gif/meme que tenhas guardado.</p>' +
       '</div>' +
     "</div>";
   }
@@ -253,8 +249,15 @@
     var file = el("comp-file");
     if (file) file.onchange = function () {
       var f = file.files && file.files[0]; if (!f) return;
-      el("mp-round-foot").innerHTML = '<div class="play-foot"><p class="muted">A enviar foto…</p></div>';
-      compress(f, function (url) { if (url) conn.submitClue({ ty: "i", v: url }); else renderClue(); });
+      el("mp-round-foot").innerHTML = '<div class="play-foot"><p class="muted">A enviar…</p></div>';
+      if (f.type === "image/gif" && f.size < 900000) {     // gif pequeno: envia tal e qual (preserva a animação)
+        var fr = new FileReader();
+        fr.onload = function (e) { conn.submitClue({ ty: "i", v: e.target.result }); };
+        fr.onerror = function () { renderClue(); };
+        fr.readAsDataURL(f);
+      } else {                                              // foto (ou gif grande): comprime p/ caber no envio
+        compress(f, function (url) { if (url) conn.submitClue({ ty: "i", v: url }); else renderClue(); });
+      }
     };
     var go = el("comp-gif-go");
     if (go) go.onclick = runGifSearch;
