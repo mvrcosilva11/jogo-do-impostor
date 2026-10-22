@@ -320,3 +320,7 @@ body[data-studio="1"] .gif-note { display: block; }
 .mp-vote-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; overflow-y: auto; }
 .vote-btn { width: 100%; font-size: 1.1rem; }
 .verdict { font-size: 1.25rem; font-weight: 850; margin-top: 6px; }
+
+/* botão do som (jm.js): à direita, depois do número do joguinho */
+.home-top { justify-content: flex-start; }
+.home-top .kicker { margin-left: auto; }

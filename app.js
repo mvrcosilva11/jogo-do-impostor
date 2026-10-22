@@ -390,7 +390,7 @@ function renderRevealCard() {
 
 function bindHoldToReveal() {
   const card = $("#reveal-card");
-  const reveal = () => card.classList.add("flipped");
+  const reveal = () => { if (!card.classList.contains("flipped") && window.JM) JM.play("flip"); card.classList.add("flipped"); };
   const hide = () => card.classList.remove("flipped");
 
   // pointer events cobrem toque + rato
@@ -402,6 +402,7 @@ function bindHoldToReveal() {
 }
 
 function nextPlayer() {
+  if (window.JM) JM.play("tap");
   if (state.revealIndex < state.roles.length - 1) {
     state.revealIndex++;
     renderRevealCard();
@@ -435,6 +436,7 @@ function showStarterGif(name) {
 }
 
 function startPlay() {
+  if (window.JM) JM.play("drum");
   state.starter = state.roles[Math.floor(Math.random() * state.roles.length)].name;
   $("#starter-name").textContent = state.starter;
   showStarterGif(state.starter);
@@ -444,6 +446,7 @@ function startPlay() {
 
 // ─────────────────────────── ECRÃ: RESULTADO ───────────────────────────
 function showResult() {
+  if (window.JM) JM.play("win");
   stopRoundMusic();
   if (state.word) {
     $("#result-label").textContent = "A palavra era:";
@@ -500,12 +503,13 @@ function init() {
     studioToggle.classList.toggle("on", state.studio);
     studioToggle.setAttribute("aria-checked", String(state.studio));
   };
-  const flipStudio = () => { state.studio = !state.studio; saveStudio(state.studio); paintStudio(); };
+  const flipStudio = () => { state.studio = !state.studio; saveStudio(state.studio); paintStudio(); if (window.JM) JM.studio(state.studio); };
   studioToggle.addEventListener("click", flipStudio);
   studioToggle.addEventListener("keydown", (e) => {
     if (e.key === " " || e.key === "Enter") { e.preventDefault(); flipStudio(); }
   });
   paintStudio();
+  if (window.JM) JM.soundButton(document.querySelector(".home-top .kicker"));
 
   // Botões "voltar"
   $$("[data-goto]").forEach((b) =>
