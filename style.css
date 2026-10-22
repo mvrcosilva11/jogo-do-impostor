@@ -324,3 +324,7 @@ body[data-studio="1"] .gif-note { display: block; }
 /* botão do som (jm.js): à direita, depois do número do joguinho */
 .home-top { justify-content: flex-start; }
 .home-top .kicker { margin-left: auto; }
+
+/* ilustração da casa (Joguinhos do Marco) ao lado do título */
+.hero { position: relative; }
+.hero-ill { position: absolute; right: -6px; bottom: 6px; width: clamp(120px, 38vw, 170px); height: auto; transform: rotate(-6deg); }
