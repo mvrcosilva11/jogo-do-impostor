@@ -53,7 +53,7 @@
         <button class="btn-back" data-goto="screen-home">←</button>
         <h2>Jogadores</h2>
       </header>
-      <p class="muted">Adiciona os nomes — mínimo 3.</p>
+      <p class="muted" id="players-note" aria-live="polite">Adiciona os nomes — mínimo 3.</p>
       <p class="gif-note">⚠️ Para aparecer o gif de quem começa, escreve o nome <b>exatamente como na lista</b>. <button type="button" class="gif-info-btn" data-gifinfo>ver nomes</button></p>
       <div id="players-list" class="players-list"></div>
       <button class="btn btn-ghost" id="btn-add-player">+ Adicionar jogador</button>
@@ -127,7 +127,7 @@
     <!-- ECRÃ: REVELAÇÃO (CARDS) -->
     <section class="screen" id="screen-reveal">
       <div class="reveal-progress"><span id="reveal-index">1</span> / <span id="reveal-total">0</span></div>
-      <div class="card" id="reveal-card">
+      <div class="card" id="reveal-card" tabindex="0" role="button" aria-label="Carta do jogador: pressiona e mantém para ver">
         <div class="card-face card-front">
           <span class="card-corner-label">JOGADOR</span>
           <div class="card-name" id="card-name">Nome</div>

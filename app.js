@@ -71,13 +71,18 @@ function showScreen(id) {
 }
 
 // ── Música de suspense (ecrã "quem começa"), em loop ──
-const roundAudio = new Audio("background%20round%20sound.mp3");
-roundAudio.loop = true;
+// Só se descarrega quando é precisa (são quase 3 MB; abrir o jogo com dados móveis não a puxa).
+let roundAudio = null;
 function playRoundMusic() {
-  try { roundAudio.currentTime = 0; roundAudio.play().catch(() => {}); } catch (e) {}
+  try {
+    if (!roundAudio) { roundAudio = new Audio("background%20round%20sound.mp3"); roundAudio.loop = true; }
+    if (window.JM && JM.muted()) return;
+    roundAudio.currentTime = 0;
+    roundAudio.play().catch(() => {});
+  } catch (e) {}
 }
 function stopRoundMusic() {
-  try { roundAudio.pause(); roundAudio.currentTime = 0; } catch (e) {}
+  try { if (roundAudio) { roundAudio.pause(); roundAudio.currentTime = 0; } } catch (e) {}
 }
 
 function randInt(min, max) { // inclusive
@@ -196,8 +201,13 @@ function cleanNames() {
   return state.players.map((n) => n.trim()).filter(Boolean);
 }
 
+// Nomes repetidos baralham a revelação e o resultado: só se avança com nomes todos diferentes.
 function validatePlayers() {
-  $("#btn-players-next").disabled = cleanNames().length < 3;
+  const names = cleanNames(), low = names.map((n) => n.toLowerCase());
+  const dup = low.some((n, i) => low.indexOf(n) !== i);
+  $("#btn-players-next").disabled = names.length < 3 || dup;
+  const note = $("#players-note");
+  if (note) note.textContent = dup ? "Há nomes repetidos: muda um deles." : "Adiciona os nomes — mínimo 3.";
 }
 
 // ─────────────────────────── ECRÃ: IMPOSTORES ──────────────────────────
@@ -399,6 +409,9 @@ function bindHoldToReveal() {
   card.addEventListener("pointerleave", hide);
   card.addEventListener("pointercancel", hide);
   card.addEventListener("contextmenu", (e) => e.preventDefault());
+  // teclado: carregar em espaço ou Enter mostra, largar esconde (igual ao dedo)
+  card.addEventListener("keydown", (e) => { if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); reveal(); } });
+  card.addEventListener("keyup", (e) => { if (e.key === " " || e.key === "Enter") hide(); });
 }
 
 function nextPlayer() {
