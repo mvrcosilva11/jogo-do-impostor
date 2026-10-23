@@ -1,330 +1,146 @@
-:root {
-  --bg: #ececec;
-  --ink: #0a0a0a;
-  --muted: #8a8a8a;
-  --line: #00000014;
-  --yellow: #ffe14d;
-  --purple: #c9a3ff;
-  --pink: #f7a8d8;
-  --green: #b8e6c8;
-  --blue: #9bc4ff;
-  --orange: #ffb86b;
-  --radius: 28px;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-}
+/* Jogo do Impostor (Joguinhos do Marco, n.º 1) — o que é só deste jogo. O resto vem do jm.css.
+   A peça principal é a carta: pressionar e manter vira-a, largar esconde-a. */
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { -webkit-user-select: none; user-select: none; overscroll-behavior: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }
 
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, system-ui, sans-serif;
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
-}
-body { -webkit-user-select: none; user-select: none; }
-
-#app {
-  max-width: 460px;
-  margin: 0 auto;
-  height: 100dvh;
-  padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 24px);
-}
-
-/* ── Ecrãs ── */
-.screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; animation: fade 0.28s ease; }
-.screen.active { display: flex; }
-@keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-.spacer { flex: 1; }
-.hidden { display: none !important; }
+.body.flush { padding-left: 0; padding-right: 0; }
 .center { text-align: center; }
-.top-gap { margin-top: 26px; }
+.center-stack { align-items: center; justify-content: center; text-align: center; gap: 6px; }
+.top-gap { margin-top: 22px; }
+.kicker { font-size: var(--t-foot); font-weight: 600; color: var(--label-2); letter-spacing: -.005em; }
+.hint-text { max-width: 32ch; margin-top: 18px; font-size: var(--t-sub); line-height: 1.45; color: var(--label-2); }
+.fine.center { padding-top: 12px; }
 
-/* ── Tipografia ── */
-.kicker {
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 2.5px; text-transform: uppercase;
-  color: var(--muted); display: inline-block;
-}
-h2 { font-size: 1.9rem; font-weight: 850; letter-spacing: -0.5px; }
-.muted { color: var(--muted); font-size: 1rem; font-weight: 600; margin: 4px 0 14px; }
-.hint-text { color: var(--muted); font-size: 0.9rem; font-weight: 500; line-height: 1.5; margin-top: 16px; }
+/* ───────── jogadores ───────── */
 
-/* ── Início ── */
-.home-top { margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-
-/* Marca Joguinhos do Marco (liga à página com os joguinhos todos) */
-.jm {
-  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
-  color: var(--ink); text-decoration: none; font-size: 0.92rem; font-weight: 850; letter-spacing: -0.3px;
-  white-space: nowrap;
-}
-.home-top .kicker { white-space: nowrap; }
-.jm-mark { width: 24px; height: 24px; flex-shrink: 0; }
-.jm:focus-visible, .switch-row:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-.hero { margin: clamp(2px, 1vh, 8px) 0 clamp(12px, 3vh, 22px); }
-.big-title {
-  font-size: clamp(2.6rem, 12vw, 4.4rem); font-weight: 850; line-height: 0.92; letter-spacing: -2px;
-}
-.big-title .grey { color: #b9b9b9; }
-
-.home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: auto; }
-.mini-card {
-  position: relative; border-radius: var(--radius); padding: clamp(14px, 4vw, 20px);
-  min-height: clamp(96px, 15vh, 150px);
-  display: flex; flex-direction: column; overflow: hidden;
-}
-.mini-label { font-size: clamp(1rem, 4.5vw, 1.25rem); font-weight: 850; letter-spacing: -0.5px; line-height: 1; }
-.mini-sub { font-size: clamp(1rem, 4.5vw, 1.25rem); font-weight: 850; color: #00000055; letter-spacing: -0.5px; line-height: 1.1; }
-.c-yellow { background: var(--yellow); }
-.c-purple { background: var(--purple); }
-.c-pink { background: var(--pink); }
-.c-green { background: var(--green); }
-
-.shape { position: absolute; right: 18px; bottom: 18px; }
-.shape.circle { width: 56px; height: 56px; border-radius: 50%; border: 11px solid #00000022; }
-.shape.arrow {
-  width: 46px; height: 46px;
-  background:
-    linear-gradient(45deg, transparent 46%, #00000022 46%, #00000022 54%, transparent 54%),
-    linear-gradient(135deg, transparent 60%, #00000022 60%);
-}
-
-/* ── Botões ── */
-.btn {
-  border: none; border-radius: 999px; font-size: 1.05rem; font-weight: 800;
-  padding: 17px 22px; cursor: pointer; font-family: inherit; color: var(--ink);
-  transition: transform 0.08s ease, opacity 0.2s ease; letter-spacing: -0.2px;
-}
-.btn:active { transform: scale(0.97); }
-.btn[disabled] { opacity: 0.35; pointer-events: none; }
-.btn-big { width: 100%; padding: clamp(14px, 4vw, 19px); font-size: 1.12rem; margin-top: 10px; }
-.btn-dark { background: var(--ink); color: #fff; }
-.btn-pink { background: var(--pink); color: var(--ink); }
-.btn-ghost { background: transparent; border: 2px solid #00000018; color: var(--ink); }
-
-.trend-status {
-  display: block; width: 100%; margin-top: 12px; padding: 6px;
-  background: none; border: none; font-family: inherit; cursor: pointer;
-  text-align: center; font-size: 0.82rem; font-weight: 700; color: var(--muted);
-  letter-spacing: 0.2px;
-}
-.trend-status.busy { opacity: 0.6; }
-
-.topbar { display: flex; align-items: center; gap: 14px; margin: 4px 0 18px; }
-.btn-back {
-  background: #fff; border: none; color: var(--ink);
-  width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow);
-}
-
-/* ── Lista de jogadores ── */
-.players-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; overflow-y: auto; }
-.player-row { display: flex; gap: 8px; align-items: center; }
-.player-row input {
-  flex: 1; background: #fff; border: 2px solid transparent; border-radius: 16px;
-  padding: 16px 18px; color: var(--ink); font-size: 1.05rem; font-weight: 600; font-family: inherit;
-  box-shadow: var(--shadow);
-}
-.player-row input:focus { outline: none; border-color: var(--ink); }
+.player-row .row-b { padding-top: 6px; padding-bottom: 6px; }
+.player-row .field { min-height: 40px; }
 .player-row .remove {
-  background: #fff; border: none; color: var(--muted); width: 48px; height: 48px;
-  border-radius: 50%; font-size: 1.2rem; cursor: pointer; flex-shrink: 0; box-shadow: var(--shadow);
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #FF3B30;
+  color: #fff;
 }
+.player-row .remove svg { width: 14px; height: 14px; stroke-width: 3; }
+.player-row .num { flex: none; width: 26px; font-size: var(--t-sub); font-weight: 600; color: var(--label-3); text-align: right; }
 
-/* ── Impostores ── */
-.mode-toggle { display: flex; background: #ddd; border-radius: 999px; padding: 5px; margin: 10px 0 16px; }
-.mode-btn {
-  flex: 1; background: transparent; border: none; color: var(--muted);
-  padding: 13px; border-radius: 999px; font-size: 1rem; font-weight: 800; cursor: pointer; font-family: inherit;
-}
-.mode-btn.active { background: var(--ink); color: #fff; }
+/* ───────── a carta ───────── */
 
-.counter { display: flex; align-items: center; justify-content: center; gap: 26px; margin: clamp(16px, 5vh, 36px) 0 12px; }
-.counter-btn {
-  width: clamp(54px, 14vw, 66px); height: clamp(54px, 14vw, 66px); border-radius: 50%; border: none; background: #fff;
-  color: var(--ink); font-size: 2rem; cursor: pointer; font-weight: 700; box-shadow: var(--shadow);
-}
-.counter-btn:active { transform: scale(0.92); }
-.counter-btn[disabled] { opacity: 0.35; }
-.counter-value { font-size: clamp(2.8rem, 12vw, 4rem); font-weight: 850; min-width: 80px; text-align: center; letter-spacing: -2px; }
-
-/* ── Toggle (switch) ── */
-.switch-row {
-  display: flex; align-items: center; gap: 14px; justify-content: space-between;
-  background: #fff; border-radius: 18px; padding: 14px 18px; margin-top: 14px;
-  box-shadow: var(--shadow); cursor: pointer;
-}
-.switch-title { font-size: 1rem; font-weight: 800; }
-.switch-sub { font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-top: 3px; max-width: 250px; }
-.switch { flex-shrink: 0; width: 52px; height: 30px; border-radius: 999px; background: #d6d6d6; position: relative; transition: background 0.2s ease; }
-.switch .knob { position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform 0.2s ease; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-.switch-row.on .switch { background: var(--ink); }
-.switch-row.on .switch .knob { transform: translateX(22px); }
-
-/* ── Escrita (modo personalizado) — card que abre ao pressionar ── */
-#write-front { background: linear-gradient(160deg, #3a3550, #262238); }
-#write-front .card-name, #write-front .card-instruction { color: #fff; }
-#write-front .card-instruction { opacity: 0.75; }
-#write-back { background: var(--blue); color: var(--ink); }
-
-.write-role {
-  font-size: 0.9rem; font-weight: 850; letter-spacing: 2px; text-transform: uppercase;
-  padding: 9px 18px; border-radius: 999px; margin-bottom: 18px;
-  background: #00000018; color: #00000088;
-}
-
-.write-instruction { color: #000000aa; font-size: 1rem; font-weight: 700; line-height: 1.4; max-width: 300px; margin-bottom: 18px; }
-.write-box {
-  width: 86%; background: #00000010; border: 2px solid #00000018; border-radius: 14px;
-  padding: 15px 16px; font-size: 1.3rem; font-weight: 800; font-family: inherit; color: var(--ink);
-  text-align: center;
-}
-.write-box:focus { outline: none; border-color: var(--ink); background: #fff; }
-.write-box.shake { animation: shake 0.4s; border-color: #ff3860; }
-@keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px);} 75%{transform:translateX(7px);} }
-
-.big-card { border-radius: var(--radius); padding: 34px 26px; text-align: center; margin-top: 8px; }
-.big-card .dice { font-size: 3.5rem; margin-bottom: 12px; }
-.big-card p { color: #00000099; font-weight: 700; line-height: 1.5; font-size: 1.05rem; }
-.big-card strong { color: var(--ink); }
-
-/* ── Card de revelação (flip) ── */
-.reveal-progress { text-align: center; color: var(--muted); font-weight: 800; margin-bottom: 12px; font-size: 1rem; letter-spacing: 1px; }
 .card {
-  flex: 1; position: relative; border-radius: var(--radius); margin-bottom: 12px; min-height: clamp(180px, 40vh, 400px);
-  transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(0.3, 0.7, 0.3, 1);
+  position: relative;
+  flex: 1;
+  min-height: clamp(260px, 52vh, 460px);
+  margin: 4px 0 0;
+  border-radius: var(--r-card);
+  background: none;
+  box-shadow: none;
+  transform-style: preserve-3d;
+  transition: transform .5s cubic-bezier(.3, .7, .3, 1);
+  -webkit-touch-callout: none;
 }
+.card.small { flex: none; min-height: clamp(200px, 34vh, 300px); }
 .card.flipped { transform: rotateY(180deg); }
 .card-face {
-  position: absolute; inset: 0; border-radius: var(--radius);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: clamp(20px, 5vw, 32px);
-  backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: var(--shadow);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 24px;
+  border-radius: var(--r-card);
+  text-align: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  box-shadow: var(--lift), 0 18px 40px rgba(0, 0, 0, .12);
 }
-.card-front { background: var(--yellow); }
-.card-back { transform: rotateY(180deg); background: var(--ink); color: #fff; }
-.card-back.is-word { background: var(--ink); color: #fff; }
-.card-back.is-impostor { background: var(--pink); color: var(--ink); }
+.card-front { background: var(--front, var(--tint)); color: #111; }
+.card-back { transform: rotateY(180deg); background: #111; color: #fff; }
+.card-back.is-impostor { background: var(--tint); color: #111; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .card-back.is-word { background: #2C2C2E; } }
+:root[data-theme="dark"] .card-back.is-word { background: #2C2C2E; }
+.card-corner { position: absolute; top: 20px; left: 22px; font-size: var(--t-foot); font-weight: 600; opacity: .6; }
+.card-name { font-size: clamp(2rem, 9vw, 2.8rem); font-weight: 800; line-height: 1.05; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.card-hint { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 18px; font-size: var(--t-sub); font-weight: 600; opacity: .62; }
+.card-hint .ic { width: 34px; height: 34px; animation: tap 1.3s ease-in-out infinite; }
+@keyframes tap { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-.card-corner-label {
-  position: absolute; top: 22px; left: 24px;
-  font-size: 0.72rem; font-weight: 800; letter-spacing: 2px; color: #00000055;
+.role-label { margin-bottom: 10px; font-size: var(--t-foot); font-weight: 600; opacity: .65; }
+.the-word { font-size: clamp(2.1rem, 9.5vw, 3rem); font-weight: 800; line-height: 1.05; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.the-hint { max-width: 26ch; margin-top: 14px; font-size: var(--t-body); font-weight: 600; line-height: 1.4; opacity: .85; }
+.the-orig { display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; font-size: var(--t-foot); opacity: .6; }
+.the-orig svg { width: 14px; height: 14px; }
+
+/* a escrita (palavra vossa) */
+#write-front { --front: #2C2C2E; color: #fff; }
+#write-back { background: var(--surface); color: var(--label); }
+.write-instruction { max-width: 30ch; margin-bottom: 18px; font-size: var(--t-sub); line-height: 1.4; color: var(--label-2); }
+.write-box { width: 100%; max-width: 320px; font-size: 1.3rem; font-weight: 700; text-align: center; }
+.write-box.shake { animation: shake .4s; box-shadow: inset 0 0 0 2px var(--danger); }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
+
+/* ───────── a jogar, resultado ───────── */
+
+.starter { font-size: clamp(2.6rem, 12vw, 3.6rem); font-weight: 800; line-height: 1.02; letter-spacing: -.035em; }
+.starter-gif { display: none; width: 100%; margin: 14px 0 2px; }
+.starter-gif-img { display: block; max-width: 82%; max-height: 34vh; margin: 0 auto; border-radius: 22px; box-shadow: var(--lift); object-fit: contain; }
+.result-word { font-size: clamp(2.2rem, 10vw, 3.2rem); font-weight: 800; line-height: 1.05; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.tr-note { font-size: var(--t-foot); color: var(--label-2); }
+.impostor-reveal { display: grid; gap: 10px; width: 100%; max-width: 360px; margin-top: 6px; }
+.impostor-reveal .imp { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 60px; padding: 12px 18px; border-radius: 22px; background: var(--tint); color: #111; font-size: var(--t-3); font-weight: 700; }
+.impostor-reveal .imp .ic { width: 24px; height: 24px; }
+.verdict { margin-bottom: 18px; font-size: var(--t-1); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; }
+
+/* ───────── online ───────── */
+
+.code-in { flex: 1; font-size: 1.3rem; font-weight: 700; letter-spacing: .35em; text-transform: uppercase; }
+.warn-f { color: var(--danger); min-height: 1.4em; }
+.room { padding: 4px var(--pad) 18px; text-align: center; }
+.code-tiles { display: flex; justify-content: center; gap: 8px; }
+.code-tiles span {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 76px;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--lift);
+  font-size: 2.2rem;
+  font-weight: 800;
 }
-.card-name { font-size: clamp(1.8rem, 8vw, 2.6rem); font-weight: 850; margin-bottom: clamp(14px, 3vh, 22px); letter-spacing: -1px; }
-.card-instruction { color: #00000077; font-size: 1rem; font-weight: 600; display: flex; flex-direction: column; gap: 8px; }
-.finger { font-size: 2.4rem; animation: tap 1.3s infinite; }
-@keyframes tap { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.code-tiles span:nth-child(odd) { transform: rotate(-3deg); }
+.code-tiles span:nth-child(even) { transform: rotate(2deg); background: var(--tint); color: #111; }
+.net-dot { display: inline-block; width: 8px; height: 8px; margin-left: 4px; border-radius: 50%; background: var(--label-3); vertical-align: middle; }
+.net-dot.on { background: #34C759; }
+.list-h .count { font-weight: 500; color: var(--label-2); }
+.crown { width: 18px; height: 18px; color: #E5A800; }
 
-/* conteúdo do verso */
-.role-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; margin-bottom: 12px; font-weight: 800; }
-.the-word { font-size: clamp(2rem, 9vw, 2.9rem); font-weight: 850; line-height: 1.05; margin-bottom: 14px; letter-spacing: -1px; }
-.the-impostor { font-size: 2.4rem; font-weight: 850; margin-bottom: 14px; }
-.the-hint { font-size: 1.05rem; font-weight: 600; line-height: 1.45; opacity: 0.85; max-width: 320px; }
+.composer { margin-top: 16px; }
+.composer .seg { margin-bottom: 12px; }
+.composer .field { margin-bottom: 10px; }
+.composer .file-btn { position: relative; overflow: hidden; }
+.composer .file-btn input { position: absolute; inset: 0; opacity: 0; }
+.composer .fine { text-align: center; }
+.sent { margin-top: 18px; text-align: center; }
+.sent .done { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-3); font-weight: 700; color: var(--tint-ink); }
+.sent .done .ic { width: 24px; height: 24px; }
 
-/* ── Jogo / Resultado ── */
-.play-content, .result-content { margin: auto 0; text-align: center; display: flex; flex-direction: column; align-items: center; }
-.play-content .muted, .result-content .muted { margin-top: 18px; }
-.starter {
-  font-size: clamp(2.2rem, 10vw, 3.2rem); font-weight: 850; margin: 6px 0 4px; letter-spacing: -1.5px; line-height: 1;
+.mp-reveal-name { font-size: var(--t-1); font-weight: 800; letter-spacing: -.02em; }
+.mp-reveal-clue { display: grid; place-items: center; width: 100%; min-height: 38vh; margin-top: 12px; }
+.clue-img { max-width: 100%; max-height: 52vh; border-radius: 22px; box-shadow: var(--lift); }
+.clue-text { max-width: 100%; padding: 26px 28px; border-radius: var(--r-card); background: var(--surface); box-shadow: var(--lift); font-size: clamp(2rem, 10vw, 3.2rem); font-weight: 800; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.clue-text .tr-mark { display: flex; justify-content: center; }
+.dock .wait { font-size: var(--t-sub); color: var(--label-2); text-align: center; }
+
+@media (max-height: 640px) {
+  .card { min-height: 220px; }
+  .card.small { min-height: 170px; }
 }
-.starter-gif { display: none; width: 100%; margin: 12px 0 4px; }
-.starter-gif-img {
-  display: block; margin: 0 auto; max-width: 82%; max-height: 34vh;
-  border-radius: 18px; box-shadow: var(--shadow); object-fit: contain;
-}
-.result-word { font-size: clamp(2rem, 9vw, 3rem); font-weight: 850; margin: 4px 0; letter-spacing: -1px; }
-.impostor-reveal { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; width: 100%; }
-.impostor-reveal .imp {
-  background: var(--pink); color: var(--ink); padding: 16px; border-radius: 18px;
-  font-size: 1.3rem; font-weight: 850; box-shadow: var(--shadow);
-}
-
-/* botões do resultado: tamanhos uniformes e bem proporcionados (3 opções) */
-#screen-result .btn-big {
-  height: 54px; padding: 0 22px; margin-top: 0; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.05rem; border-radius: 999px;
-}
-#screen-result .btn-big + .btn-big { margin-top: 10px; }
-.result-content { margin: 14px 0; }
-
-/* Studio Mode no início: fica logo por cima dos botões de começar */
-#studio-toggle { margin-top: clamp(10px, 2.4vh, 16px); }
-
-/* ecrãs muito baixos: compactar ainda mais */
-@media (max-height: 680px) {
-  .hint-text { display: none; }
-  .mini-card { min-height: 84px; }
-  .card { min-height: 160px; }
-  .switch-sub { display: none; }
-  .muted { margin: 2px 0 10px; }
-}
-
-/* ─────────────────────────── MULTIPLAYER ─────────────────────────── */
-.or-sep { text-align: center; color: var(--muted); font-weight: 700; margin: 14px 0; position: relative; }
-.or-sep span { background: var(--bg); padding: 0 12px; position: relative; z-index: 1; }
-.or-sep::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: #00000012; }
-.code-input { text-transform: uppercase; text-align: center; letter-spacing: 8px; font-weight: 850; font-size: 1.6rem; }
-.mp-status { text-align: center; color: var(--accent, #c0392b); font-weight: 700; font-size: 0.9rem; margin-top: 14px; min-height: 1.2em; color: #b23; }
-
-.lobby-top { text-align: center; margin-bottom: 10px; }
-.lobby-code { font-size: clamp(3rem, 16vw, 5rem); font-weight: 850; letter-spacing: 6px; line-height: 1; margin: 4px 0; }
-.net-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #ccc; vertical-align: middle; margin-left: 4px; }
-.net-dot.on { background: #2ecc71; }
-
-.mp-players { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 10px 0 16px; overflow-y: auto; }
-.mp-player { background: #fff; border-radius: 999px; padding: 10px 16px; font-weight: 800; box-shadow: var(--shadow); font-size: 0.95rem; }
-
-.play-foot { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 14px; }
-.play-foot .btn-big { width: 100%; }
-
-.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; padding: 4px 0; }
-.gcell { position: relative; border-radius: 16px; overflow: hidden; background: #ddd; box-shadow: var(--shadow); aspect-ratio: 3/4; }
-.gcell img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gph { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-weight: 700; font-size: 0.85rem; }
-.gname { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(transparent, #000a); color: #fff; font-weight: 800; font-size: 0.85rem; padding: 14px 8px 6px; text-align: center; }
-
-/* ─── Avisos de gif + modal de nomes + partilhar sala ─── */
-#btn-share { width: 100%; max-width: 340px; margin: 2px auto 12px; font-size: 0.95rem; padding: 12px; }
-
-.gif-note { display: none; font-size: 0.82rem; font-weight: 650; color: #7a5c00; background: #fff3c4; border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; line-height: 1.45; }
-body[data-studio="1"] .gif-note { display: block; }
-.gif-info-btn { background: none; border: none; color: var(--ink, #0a0a0a); font-weight: 850; text-decoration: underline; cursor: pointer; font-family: inherit; font-size: 0.82rem; padding: 0; }
-
-.gif-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 50; }
-.gif-modal[hidden] { display: none; }
-.gif-modal-card { background: var(--bg, #ececec); border-radius: 24px; padding: 24px; max-width: 420px; width: 100%; box-shadow: var(--shadow); max-height: 80dvh; overflow-y: auto; }
-.gif-modal-card h3 { font-size: 1.35rem; font-weight: 850; margin-bottom: 6px; }
-.gif-names-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-.gif-name-chip { background: #fff; border-radius: 999px; padding: 8px 14px; font-weight: 800; font-size: 0.9rem; box-shadow: var(--shadow); }
-
-/* ─── Multiplayer v2: compositor de pista, revelação, votação ─── */
-.composer { width: 100%; }
-.comp-tabs { display: flex; gap: 6px; background: #ddd; border-radius: 999px; padding: 5px; margin-bottom: 12px; }
-.comp-tab { flex: 1; background: transparent; border: none; color: var(--muted); padding: 10px; border-radius: 999px; font-size: 0.9rem; font-weight: 800; cursor: pointer; font-family: inherit; }
-.comp-tab.active { background: var(--ink); color: #fff; }
-.comp-panel { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.comp-panel.hidden { display: none; }
-.gif-search { display: flex; gap: 8px; width: 100%; }
-.gif-search .write-box { flex: 1; }
-.gif-search .btn { padding: 12px 16px; }
-.gif-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; width: 100%; max-height: 40vh; overflow-y: auto; margin-top: 8px; }
-.gif-pick { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; cursor: pointer; box-shadow: var(--shadow); }
-
-.mp-reveal-name { text-align: center; font-size: clamp(1.6rem, 7vw, 2.2rem); font-weight: 850; letter-spacing: -0.5px; margin-bottom: 12px; }
-.mp-reveal-clue { display: flex; align-items: center; justify-content: center; min-height: 40vh; }
-.clue-img { max-width: 100%; max-height: 52vh; border-radius: 18px; box-shadow: var(--shadow); }
-.clue-text { font-size: clamp(2rem, 11vw, 3.4rem); font-weight: 850; text-align: center; letter-spacing: -1px; background: #fff; padding: 24px 28px; border-radius: 22px; box-shadow: var(--shadow); }
-
-.mp-vote-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; overflow-y: auto; }
-.vote-btn { width: 100%; font-size: 1.1rem; }
-.verdict { font-size: 1.25rem; font-weight: 850; margin-top: 6px; }
-
-/* botão do som (jm.js): à direita, depois do número do joguinho */
-.home-top { justify-content: flex-start; }
-.home-top .kicker { margin-left: auto; }
-
-/* ilustração da casa (Joguinhos do Marco) ao lado do título */
-.hero { position: relative; }
-.hero-ill { position: absolute; right: -6px; bottom: 6px; width: clamp(120px, 38vw, 170px); height: auto; transform: rotate(-6deg); }

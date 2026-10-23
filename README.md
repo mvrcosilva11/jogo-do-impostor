@@ -4,30 +4,26 @@ Joguinho n.º 1 dos **Joguinhos do Marco** (https://joguinhos-do-marco.netlify.a
 
 Jogo de festa para um só telemóvel, passado de mão em mão. Todos recebem uma palavra secreta — exceto o(s) impostor(es), que só recebem uma dica subtil. Conversem, desconfiem e descubram quem está a fingir.
 
-## Como jogar
+## Modos
 
-1. **Iniciar jogo** e inserir os nomes dos jogadores (mínimo 3, sem limite).
-2. Escolher o número de impostores:
-   - **Escolher** — até 1/3 dos jogadores (mínimo 1).
-   - **Aleatório** — sorteado entre 1 e todos os jogadores.
-3. Cada jogador, à vez, **pressiona e mantém o dedo** no card. Quem não é impostor vê a **palavra**; o impostor vê apenas uma **pista** (uma palavra relacionada, subtil). Ao largar, esconde. Passa o telemóvel ao próximo.
-4. A app diz **quem começa**. Cada um diz uma palavra relacionada; debatam e votem.
-5. **Revelar impostor(es)** no fim. Jogar de novo.
+- **Passa o telemóvel** — um telemóvel para todos; a app escolhe a palavra. Cada jogador carrega e mantém a carta para a ver; larga para esconder e passa ao seguinte. Os nomes ficam guardados no telemóvel.
+- **Palavra vossa** — cada um escreve uma palavra e sai uma à sorte; quem a escreveu nunca é impostor e o impostor joga sem pista.
+- **Online** — cada um no seu telemóvel (sala com código de 4 letras, relay MQTT público). Pistas escritas ou em foto/gif, duas rondas e votação.
 
-## Palavras de atualidade 🔥
+Impostores: **Escolher** (até 1/3 dos jogadores) ou **À sorte** (1 é o mais provável; serem todos é o mais raro).
 
-Além do banco fixo, a app gera **palavras novas a partir do que está em tendência agora** — os artigos mais vistos da Wikipédia PT do dia (via API de pageviews da Wikimedia), com a pista derivada da descrição curta da Wikidata. Tudo no browser, sem servidor. Carrega ao abrir (cache diário em `localStorage`) e podes **tocar no estado no ecrã inicial para forçar atualização**. Sem ligação, usa só o banco fixo. Lógica em [`trending.js`](trending.js).
+## Língua
 
-## Categorias de palavras
-
-Animais, Profissões, Plantas, Comida, Lugares, Objetos, Celebridades, Personalidades Portuguesas, Música, Filmes & Séries, Youtubers PT, Brainrot, Portugal, Futebol, Drogas, Weed, Slang PT, Amigos — e **Atualidade 🔥** (dinâmica).
-
-Para acrescentar palavras, edita [`words.js`](words.js) — cada linha é `{ p: "palavra", d: "pista", c: "categoria" }`. A `pista` é uma única palavra relacionada (vista só pelo impostor); deixa `d: ""` para palavras sem pista.
+O jogo todo muda para inglês nas Definições (língua comum a todos os Joguinhos do Marco, `jm.js`). As palavras e as pistas em inglês estão em [`words-en.js`](words-en.js) (`node .dev/check-en.js` diz as que faltam). As pistas escritas no modo online chegam traduzidas automaticamente a quem joga na outra língua.
 
 ## Studio Mode
 
-Interruptor no ecrã inicial, desligado por omissão. Desligado é o jogo normal: a categoria **Amigos** (os nomes do pessoal do estúdio) e os gifs de quem começa ficam de fora. Ligado, entram. A escolha fica guardada no telemóvel; `?studio=1` no link liga-o logo.
+Desligado não deixa rasto: não há interruptor à vista. Liga-se pela porta escondida dos Joguinhos do Marco (carregar 3 s no ícone, ou o endereço `/studio`). Ligado, aparece uma secção no início com as palavras do pessoal (nomes com pistas que rimam) e os nomes com gif. Tudo isso vive em [`words-studio.js`](words-studio.js), só descarregado com o modo ligado (`node .dev/check-studio.js` confere que não há nomes do pessoal fora dele).
+
+## Categorias de palavras
+
+Animais, Profissões, Plantas, Comida, Lugares, Objetos, Celebridades, Personalidades PT, Música, Filmes & Séries, Youtubers PT, Brainrot, Portugal, Futebol, Drogas, Weed, Picante e mais. Para acrescentar palavras, edita [`words.js`](words.js) — cada linha é `{ p: "palavra", d: "pista", c: "categoria" }` — e junta a tradução em `words-en.js`.
 
 ## Stack
 
-HTML, CSS e JavaScript puro. Sem build, sem dependências. Alojado no GitHub e publicado via Netlify.
+HTML, CSS e JavaScript puro, sem build. A linguagem visual (iOS 26) e o som vêm de `jm.css` e `jm.js`, copiados dos Joguinhos do Marco com `_tools/sync-jm.sh`. Alojado no GitHub e publicado via Netlify.

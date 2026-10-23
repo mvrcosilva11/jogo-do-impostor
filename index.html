@@ -1,284 +1,332 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-PT" data-game="impostor" data-home="https://joguinhos-do-marco.netlify.app/">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#ececec" />
-  <title>Jogo do Impostor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Todos sabem a palavra secreta, menos o impostor. Num telemóvel só ou cada um no seu." />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Impostor" />
+  <title data-en="The Impostor Game">Jogo do Impostor</title>
+  <link rel="icon" href="marca/impostor.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="marca/impostor-180.png" />
+  <link rel="stylesheet" href="jm.css" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main id="app">
+  <main class="app" id="app">
 
-    <!-- ECRÃ: INÍCIO -->
-    <section class="screen active" id="screen-home">
-      <div class="home-top">
-        <a class="jm" href="https://joguinhos-do-marco.netlify.app/" aria-label="Joguinhos do Marco: ver todos os joguinhos">
-          <svg class="jm-mark" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#0a0a0a"/><circle cx="8" cy="8" r="2.7" fill="#FFE23F"/><circle cx="16" cy="8" r="2.7" fill="#FF8BC2"/><circle cx="8" cy="16" r="2.7" fill="#6FB6FF"/><circle cx="16" cy="16" r="2.7" fill="#62DFA0"/></svg>
-          <span>Joguinhos do Marco</span>
-        </a>
-        <span class="kicker">N.º 1</span>
-      </div>
-      <div class="hero">
-        <img class="hero-ill" src="https://joguinhos-do-marco.netlify.app/ilustracoes/impostor.svg" alt="" width="150" height="103">
-        <h1 class="big-title">Jogo<br>do<br><span class="grey">Impostor</span></h1>
-      </div>
-      <div class="home-cards">
-        <div class="mini-card c-yellow">
-          <span class="mini-label">Descobre</span>
-          <span class="mini-sub">quem finge</span>
-          <div class="shape circle"></div>
-        </div>
-        <div class="mini-card c-purple">
-          <span class="mini-label">Um só</span>
-          <span class="mini-sub">telemóvel</span>
-          <div class="shape arrow"></div>
+    <!-- ECRÃ: INÍCIO — os três modos, bem separados -->
+    <section class="screen on" id="screen-home">
+      <header class="nav">
+        <div class="nav-l"><a class="nb back" data-jm-home href="https://joguinhos-do-marco.netlify.app/"><i class="ic" data-ic="chevron-left"></i><span>Joguinhos</span></a></div>
+        <div class="nav-r"><button type="button" class="nb icon" data-jm="settings" aria-label="Definições" data-en-aria="Settings"><i class="ic" data-ic="gear"></i></button></div>
+      </header>
+
+      <div class="ghero">
+        <img class="appicon" src="marca/impostor.svg" alt="" width="80" height="80" data-jm-door>
+        <h1 data-en="The Impostor Game">Jogo do Impostor</h1>
+        <p data-en="Everyone gets the secret word except the impostor, who only gets a clue. Talk, suspect, and vote.">Todos recebem a palavra secreta, menos o impostor, que só tem uma pista. Falem, desconfiem e votem.</p>
+        <div class="meta">
+          <span class="badge"><i class="ic" data-ic="people"></i><span data-en="3 or more players">3 ou mais jogadores</span></span>
         </div>
       </div>
-      <!-- Studio Mode: desligado é o jogo normal; ligado junta os nomes e os gifs do pessoal do estúdio -->
-      <div class="switch-row" id="studio-toggle" role="switch" aria-checked="false" tabindex="0">
-        <div>
-          <div class="switch-title">Studio Mode</div>
-          <div class="switch-sub">Junta os nomes e os gifs do pessoal do estúdio. Desligado, é o jogo normal.</div>
+
+      <div class="list">
+        <h2 class="list-h" data-en="Pick a mode">Escolhe o modo</h2>
+        <div class="group">
+          <button type="button" class="row big" id="btn-start">
+            <span class="tile-ic lg"><i class="ic" data-ic="phone"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Pass the phone">Passa o telemóvel</span><span class="row-s" data-en="One phone for everyone. The app picks the word.">Um telemóvel para todos. A app escolhe a palavra.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+          </button>
+          <button type="button" class="row big" id="btn-custom">
+            <span class="tile-ic lg"><i class="ic" data-ic="pencil"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Your own word">Palavra vossa</span><span class="row-s" data-en="Everyone writes a word and one is drawn. Whoever wrote it is never the impostor.">Cada um escreve uma palavra e sai uma à sorte. Quem a escreveu nunca é impostor.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+          </button>
+          <button type="button" class="row big" id="btn-online">
+            <span class="tile-ic lg"><i class="ic" data-ic="online"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t">Online</span><span class="row-s" data-en="Each on their own phone, with clues in words or photos. Two rounds, then a vote.">Cada um no seu telemóvel, com pistas escritas ou em foto. Duas rondas e votação.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+          </button>
         </div>
-        <span class="switch"><span class="knob"></span></span>
       </div>
-      <button class="btn btn-dark btn-big" id="btn-start">Jogar neste telemóvel →</button>
-      <button class="btn btn-ghost btn-big" id="btn-online">Jogar com amigos (online) →</button>
+
+      <!-- só com o Studio Mode ligado (app.js preenche) -->
+      <div class="list" id="studio-list" hidden></div>
+
+      <div class="list">
+        <div class="group">
+          <button type="button" class="row" id="btn-rules"><span class="tile-ic"><i class="ic" data-ic="question"></i></span><div class="row-b"><span class="row-x row-t" data-en="How to play">Como se joga</span><i class="ic chev" data-ic="chevron-right"></i></div></button>
+        </div>
+      </div>
     </section>
 
     <!-- ECRÃ: JOGADORES -->
     <section class="screen" id="screen-players">
-      <header class="topbar">
-        <button class="btn-back" data-goto="screen-home">←</button>
-        <h2>Jogadores</h2>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-back="screen-home" aria-label="Voltar" data-en-aria="Back"><i class="ic" data-ic="chevron-left"></i></button></div>
+        <h1 class="nav-t" data-en="Players">Jogadores</h1>
+        <div class="nav-r"></div>
       </header>
-      <p class="muted" id="players-note" aria-live="polite">Adiciona os nomes — mínimo 3.</p>
-      <p class="gif-note">⚠️ Para aparecer o gif de quem começa, escreve o nome <b>exatamente como na lista</b>. <button type="button" class="gif-info-btn" data-gifinfo>ver nomes</button></p>
-      <div id="players-list" class="players-list"></div>
-      <button class="btn btn-ghost" id="btn-add-player">+ Adicionar jogador</button>
-      <div class="spacer"></div>
-      <button class="btn btn-dark btn-big" id="btn-players-next">Continuar →</button>
+      <div class="body flush">
+        <div class="list">
+          <div class="group" id="players-list"></div>
+          <div class="group">
+            <button type="button" class="row" id="btn-add-player"><span class="tile-ic"><i class="ic" data-ic="plus"></i></span><div class="row-b"><span class="row-x row-t tint" data-en="Add player">Adicionar jogador</span></div></button>
+          </div>
+          <p class="list-f" id="players-note" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-players-next" data-en="Continue">Continuar</button></div>
     </section>
 
-    <!-- ECRÃ: IMPOSTORES -->
+    <!-- ECRÃ: IMPOSTORES (as regras da ronda) -->
     <section class="screen" id="screen-impostors">
-      <header class="topbar">
-        <button class="btn-back" data-goto="screen-players">←</button>
-        <h2>Impostores</h2>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-back="screen-players" aria-label="Voltar" data-en-aria="Back"><i class="ic" data-ic="chevron-left"></i></button></div>
+        <h1 class="nav-t" data-en="Impostors">Impostores</h1>
+        <div class="nav-r"></div>
       </header>
-      <p class="muted"><span id="total-players">0</span> jogadores nesta partida.</p>
-
-      <div class="mode-toggle">
-        <button class="mode-btn active" data-mode="manual">Escolher</button>
-        <button class="mode-btn" data-mode="random">Aleatório</button>
-      </div>
-
-      <div id="manual-box">
-        <div class="counter">
-          <button class="counter-btn" id="imp-minus">−</button>
-          <div class="counter-value"><span id="imp-count">1</span></div>
-          <button class="counter-btn" id="imp-plus">+</button>
-        </div>
-        <p class="muted center">Máximo <span id="imp-max">1</span> (até 1/3 dos jogadores).</p>
-      </div>
-
-      <div id="random-box" class="hidden">
-        <div class="big-card c-purple">
-          <div class="shape dice">🎲</div>
-          <p>O número de impostores será sorteado — de <strong>1 a <span id="rand-max">0</span></strong>. Quanto mais impostores, mais raro (serem todos é o mais improvável).</p>
+      <div class="body flush">
+        <div class="list">
+          <div class="group">
+            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many?">Quantos?</span>
+              <div class="seg" role="group" style="min-width:190px">
+                <button type="button" class="mode-btn" data-mode="manual" aria-pressed="true" data-en="Choose">Escolher</button>
+                <button type="button" class="mode-btn" data-mode="random" aria-pressed="false" data-en="Random">À sorte</button>
+              </div></div></div>
+            <div class="row" id="manual-box"><div class="row-b"><span class="row-x"><span class="row-t"><b id="imp-count">1</b> <span id="imp-word"></span></span><span class="row-s" id="imp-max-note"></span></span>
+              <div class="stepper" role="group" aria-label="Impostores" data-en-aria="Impostors"><button type="button" id="imp-minus" aria-label="Menos" data-en-aria="Fewer"><i class="ic" data-ic="minus"></i></button><button type="button" id="imp-plus" aria-label="Mais" data-en-aria="More"><i class="ic" data-ic="plus"></i></button></div></div></div>
+          </div>
+          <p class="list-f" id="imp-note"></p>
         </div>
       </div>
-
-      <label class="switch-row" id="custom-toggle">
-        <div>
-          <div class="switch-title">Palavra escrita por um jogador</div>
-          <div class="switch-sub">Todos escrevem uma palavra; sorteia-se a da ronda. Quem a escreveu não é impostor. Sem pista.</div>
-        </div>
-        <span class="switch" id="custom-switch"><span class="knob"></span></span>
-      </label>
-
-      <div class="spacer"></div>
-      <button class="btn btn-dark btn-big" id="btn-impostors-next">Distribuir cartas →</button>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-impostors-next"></button></div>
     </section>
 
-    <!-- ECRÃ: ESCRITA (modo palavra personalizada) -->
+    <!-- ECRÃ: ESCRITA (palavra vossa) -->
     <section class="screen" id="screen-write">
-      <div class="reveal-progress"><span id="write-index">1</span> / <span id="write-total">0</span></div>
-      <div class="card" id="write-card">
-        <div class="card-face card-front" id="write-front">
-          <span class="card-corner-label">JOGADOR</span>
-          <div class="card-name" id="write-name">Nome</div>
-          <div class="card-instruction">
-            <span class="finger">👆</span>
-            Pressiona para escrever
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-quit aria-label="Sair" data-en-aria="Leave"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t"><span id="write-index">1</span> <span data-en="of">de</span> <span id="write-total">0</span></h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body">
+        <div class="card" id="write-card">
+          <div class="card-face card-front" id="write-front">
+            <span class="card-corner" data-en="Player">Jogador</span>
+            <div class="card-name" id="write-name"></div>
+            <div class="card-hint"><i class="ic" data-ic="hand"></i><span data-en="Tap to write">Toca para escreveres</span></div>
+          </div>
+          <div class="card-face card-back" id="write-back">
+            <div class="role-label" data-en="Your suggestion">A tua sugestão</div>
+            <p class="write-instruction" data-en="Write a word that could be this round's. If yours comes out, you're not the impostor.">Escreve uma palavra que possa ser a da ronda. Se sair a tua, não és o impostor.</p>
+            <input type="text" id="write-input" class="field write-box" placeholder="palavra…" data-en-ph="word…" autocomplete="off" autocapitalize="sentences" autocorrect="off" enterkeyhint="next" maxlength="40" />
           </div>
         </div>
-        <div class="card-face card-back" id="write-back">
-          <div class="write-role" id="write-role">JOGADOR</div>
-          <div class="write-instruction" id="write-instruction">Escreve uma palavra…</div>
-          <input type="text" id="write-input" class="write-box" placeholder="palavra…"
-                 autocomplete="off" autocapitalize="none" autocorrect="off" />
-        </div>
       </div>
-      <button class="btn btn-dark btn-big" id="btn-write-next">Próximo jogador →</button>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-write-next"></button></div>
     </section>
 
-    <!-- ECRÃ: REVELAÇÃO (CARDS) -->
+    <!-- ECRÃ: REVELAÇÃO -->
     <section class="screen" id="screen-reveal">
-      <div class="reveal-progress"><span id="reveal-index">1</span> / <span id="reveal-total">0</span></div>
-      <div class="card" id="reveal-card" tabindex="0" role="button" aria-label="Carta do jogador: pressiona e mantém para ver">
-        <div class="card-face card-front">
-          <span class="card-corner-label">JOGADOR</span>
-          <div class="card-name" id="card-name">Nome</div>
-          <div class="card-instruction">
-            <span class="finger">👆</span>
-            Pressiona e mantém para ver
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-quit aria-label="Sair" data-en-aria="Leave"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t"><span id="reveal-index">1</span> <span data-en="of">de</span> <span id="reveal-total">0</span></h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body">
+        <div class="card" id="reveal-card" tabindex="0" role="button" aria-label="Carta do jogador: carrega e mantém para ver" data-en-aria="Player card: press and hold to see">
+          <div class="card-face card-front">
+            <span class="card-corner" data-en="Player">Jogador</span>
+            <div class="card-name" id="card-name"></div>
+            <div class="card-hint"><i class="ic" data-ic="hand"></i><span data-en="Press and hold to see">Carrega e mantém para ver</span></div>
           </div>
+          <div class="card-face card-back" id="card-back"></div>
         </div>
-        <div class="card-face card-back" id="card-back">
-          <!-- preenchido dinamicamente -->
-        </div>
+        <p class="fine center" data-en="Let go to hide it, then pass the phone.">Larga para esconder e passa o telemóvel.</p>
       </div>
-      <button class="btn btn-dark btn-big" id="btn-next-player">Próximo jogador →</button>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-next-player"></button></div>
     </section>
 
-    <!-- ECRÃ: JOGO A DECORRER -->
+    <!-- ECRÃ: A JOGAR -->
     <section class="screen" id="screen-play">
-      <div class="play-content">
-        <span class="kicker">A JOGAR</span>
-        <p class="muted">Começa a dizer a palavra:</p>
-        <div class="starter" id="starter-name">—</div>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-quit aria-label="Sair" data-en-aria="Leave"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t" data-en="Playing">A jogar</h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body center-stack">
+        <p class="kicker" data-en="Starting with">Começa</p>
+        <div class="starter" id="starter-name"></div>
         <div class="starter-gif" id="starter-gif"></div>
-        <p class="hint-text">Cada jogador diz uma palavra relacionada. Debatam e votem em quem acham que é o impostor.</p>
+        <p class="hint-text" data-en="Each player says one word linked to the secret. Debate, then vote for who you think is the impostor.">Cada um diz uma palavra ligada à secreta. Debatam e votem em quem acham que é o impostor.</p>
       </div>
-      <button class="btn btn-pink btn-big" id="btn-reveal-impostor">Revelar impostor(es)</button>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-reveal-impostor" data-en="Reveal the impostor">Revelar o impostor</button></div>
     </section>
 
     <!-- ECRÃ: RESULTADO -->
     <section class="screen" id="screen-result">
-      <div class="result-content">
-        <span class="kicker">FIM DE JOGO</span>
-        <p class="muted" id="result-label">A palavra era:</p>
-        <div class="result-word" id="result-word">—</div>
-        <p class="muted top-gap">Impostor(es):</p>
+      <header class="nav">
+        <div class="nav-l"></div>
+        <h1 class="nav-t" data-en="Game over">Fim do jogo</h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body center-stack">
+        <p class="kicker" id="result-label"></p>
+        <div class="result-word" id="result-word"></div>
+        <p class="tr-note" id="result-tr" hidden></p>
+        <p class="kicker top-gap" id="result-imps-label"></p>
         <div class="impostor-reveal" id="impostor-names"></div>
       </div>
-      <button class="btn btn-dark btn-big" id="btn-play-again">Jogar novamente</button>
-      <button class="btn btn-ghost btn-big" id="btn-change-method">Alterar método de jogo</button>
-      <button class="btn btn-ghost btn-big" id="btn-new-game">Começar novo jogo</button>
-    </section>
-
-    <!-- ══════════════════════════ MULTIPLAYER ══════════════════════════ -->
-
-    <!-- ONLINE: entrada -->
-    <section class="screen" id="screen-online">
-      <header class="topbar">
-        <button class="btn-back" data-goto="screen-home">←</button>
-        <h2>Jogar online</h2>
-      </header>
-      <p class="muted">Cria uma sala e partilha o código, ou entra com um código.</p>
-      <div class="player-row"><input id="mp-name" type="text" placeholder="O teu nome" autocomplete="off" autocapitalize="words" /></div>
-      <p class="gif-note">⚠️ Para apareceres com o teu gif, escreve o nome <b>exatamente como na lista</b>. <button type="button" class="gif-info-btn" data-gifinfo>ver nomes</button></p>
-      <button class="btn btn-dark btn-big" id="btn-create">Criar sala</button>
-      <div class="or-sep"><span>ou</span></div>
-      <div class="player-row"><input id="mp-code" class="code-input" type="text" placeholder="CÓDIGO" maxlength="4" autocomplete="off" autocapitalize="characters" /></div>
-      <button class="btn btn-ghost btn-big" id="btn-join">Entrar na sala</button>
-      <p class="mp-status" id="mp-status"></p>
-    </section>
-
-    <!-- ONLINE: lobby -->
-    <section class="screen" id="screen-lobby">
-      <div class="lobby-top">
-        <span class="kicker">SALA <span class="net-dot" id="net-dot"></span></span>
-        <div class="lobby-code" id="lobby-code">----</div>
-        <p class="muted center" id="lobby-count">0 jogadores</p>
-      </div>
-      <button class="btn btn-ghost" id="btn-share">🔗 Partilhar link da sala</button>
-      <div class="mp-players" id="lobby-players"></div>
-
-      <div id="lobby-host">
-        <div class="mode-toggle">
-          <button class="mode-btn active" data-mpmode="manual">Escolher</button>
-          <button class="mode-btn" data-mpmode="random">Aleatório</button>
-        </div>
-        <div id="mp-manual-box">
-          <div class="counter">
-            <button class="counter-btn" id="mp-imp-minus">−</button>
-            <div class="counter-value"><span id="mp-imp-count">1</span></div>
-            <button class="counter-btn" id="mp-imp-plus">+</button>
+      <div class="dock">
+        <div class="btns">
+          <button type="button" class="btn fill lg block" id="btn-play-again" data-en="Another round">Outra ronda</button>
+          <div class="btns two">
+            <button type="button" class="btn lg" id="btn-change-method" data-en="Change rules">Mudar regras</button>
+            <button type="button" class="btn lg" id="btn-new-game" data-en="Start over">Recomeçar</button>
           </div>
-          <p class="muted center">impostores (máx. <span id="mp-imp-max">1</span>)</p>
         </div>
-        <div id="mp-random-box" class="hidden">
-          <p class="muted center">Número de impostores sorteado (1 é o mais provável).</p>
-        </div>
-        <p class="hint-text" style="margin-top:14px">Cada ronda, cada um dá uma pista (escrever ou foto/gif do telemóvel). 2 rondas e depois vai a votos.</p>
       </div>
-
-      <div class="spacer"></div>
-      <button class="btn btn-dark btn-big" id="btn-lobby-start">Começar</button>
-      <p class="hint-text" id="lobby-wait">À espera que o anfitrião comece…</p>
-      <button class="btn btn-ghost btn-big" id="btn-lobby-leave">Sair da sala</button>
     </section>
 
-    <!-- ONLINE: a tua carta + ronda -->
+    <!-- ══════════════════════════ ONLINE ══════════════════════════ -->
+
+    <!-- ONLINE: entrar ou criar sala -->
+    <section class="screen" id="screen-online">
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-back="screen-home" aria-label="Voltar" data-en-aria="Back"><i class="ic" data-ic="chevron-left"></i></button></div>
+        <h1 class="nav-t">Online</h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body flush">
+        <div class="list">
+          <h2 class="list-h small" data-en="Your name">O teu nome</h2>
+          <div class="group"><div class="row solo"><input id="mp-name" class="field plain" type="text" placeholder="Como te chamas?" data-en-ph="What's your name?" autocomplete="off" autocapitalize="words" maxlength="20" enterkeyhint="done" /></div></div>
+        </div>
+        <div class="list">
+          <div class="group">
+            <button type="button" class="row big" id="btn-create"><span class="tile-ic lg"><i class="ic" data-ic="plus"></i></span><div class="row-b"><span class="row-x"><span class="row-t" data-en="Create a room">Criar sala</span><span class="row-s" data-en="You get a code to share with the others.">Recebes um código para partilhar com os outros.</span></span><i class="ic chev" data-ic="chevron-right"></i></div></button>
+          </div>
+        </div>
+        <div class="list">
+          <h2 class="list-h small" data-en="Or join with a code">Ou entra com um código</h2>
+          <div class="group"><div class="row"><div class="row-b">
+            <input id="mp-code" class="field plain code-in" type="text" placeholder="CÓDIGO" data-en-ph="CODE" maxlength="4" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Código da sala" data-en-aria="Room code" />
+            <button type="button" class="btn sm tinted" id="btn-join" data-en="Join">Entrar</button>
+          </div></div></div>
+          <p class="list-f warn-f" id="mp-status" role="status"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ONLINE: sala de espera -->
+    <section class="screen" id="screen-lobby">
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb" id="btn-lobby-leave" data-en="Leave">Sair</button></div>
+        <h1 class="nav-t"><span data-en="Room">Sala</span> <span class="net-dot" id="net-dot" aria-hidden="true"></span></h1>
+        <div class="nav-r"><button type="button" class="nb icon" id="btn-share" aria-label="Partilhar a sala" data-en-aria="Share the room"><i class="ic" data-ic="share"></i></button></div>
+      </header>
+      <div class="body flush">
+        <div class="room">
+          <div class="code-tiles" id="lobby-code" role="img"></div>
+          <p class="fine center" data-en="Share the code or the link: whoever has it can come in.">Partilha o código ou o link: quem o tiver pode entrar.</p>
+        </div>
+        <div class="list">
+          <h2 class="list-h"><span data-en="Players">Jogadores</span> <span class="count" id="lobby-count"></span></h2>
+          <div class="group" id="lobby-players"></div>
+        </div>
+        <div class="list" id="lobby-host">
+          <h2 class="list-h" data-en="Impostors">Impostores</h2>
+          <div class="group">
+            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many?">Quantos?</span>
+              <div class="seg" role="group" style="min-width:190px">
+                <button type="button" data-mpmode="manual" aria-pressed="true" data-en="Choose">Escolher</button>
+                <button type="button" data-mpmode="random" aria-pressed="false" data-en="Random">À sorte</button>
+              </div></div></div>
+            <div class="row" id="mp-manual-box"><div class="row-b"><span class="row-x"><span class="row-t"><b id="mp-imp-count">1</b> <span id="mp-imp-word"></span></span><span class="row-s" id="mp-imp-note"></span></span>
+              <div class="stepper" role="group"><button type="button" id="mp-imp-minus" aria-label="Menos" data-en-aria="Fewer"><i class="ic" data-ic="minus"></i></button><button type="button" id="mp-imp-plus" aria-label="Mais" data-en-aria="More"><i class="ic" data-ic="plus"></i></button></div></div></div>
+          </div>
+          <p class="list-f" data-en="Each round, everyone gives a clue (written, or a photo or gif from the phone). Two rounds, then it goes to a vote.">Em cada ronda, cada um dá uma pista (escrita, ou foto ou gif do telemóvel). Duas rondas e depois vai a votos.</p>
+        </div>
+      </div>
+      <div class="dock">
+        <button type="button" class="btn fill lg block" id="btn-lobby-start" data-en="Start">Começar</button>
+        <p class="note" id="lobby-wait" data-en="Waiting for the host to start…">À espera que o anfitrião comece…</p>
+      </div>
+    </section>
+
+    <!-- ONLINE: a tua carta + a tua pista -->
     <section class="screen" id="screen-mp-round">
-      <div class="reveal-progress" id="mp-round-head">A TUA CARTA</div>
-      <div class="card" id="mp-card">
-        <div class="card-face card-front" id="mp-front">
-          <span class="card-corner-label">A TUA CARTA</span>
-          <div class="card-name" id="mp-myname">—</div>
-          <div class="card-instruction"><span class="finger">👆</span> Pressiona e mantém para ver</div>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-mpleave aria-label="Sair da sala" data-en-aria="Leave the room"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t" id="mp-round-head"></h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body">
+        <div class="card small" id="mp-card">
+          <div class="card-face card-front" id="mp-front">
+            <span class="card-corner" data-en="Your card">A tua carta</span>
+            <div class="card-name" id="mp-myname"></div>
+            <div class="card-hint"><i class="ic" data-ic="hand"></i><span data-en="Press and hold to see">Carrega e mantém para ver</span></div>
+          </div>
+          <div class="card-face card-back is-word" id="mp-back"></div>
         </div>
-        <div class="card-face card-back is-word" id="mp-back"></div>
+        <div id="mp-round-foot"></div>
       </div>
-      <div id="mp-round-foot"></div>
     </section>
 
-    <!-- ONLINE: revelar as pistas uma a uma -->
+    <!-- ONLINE: as pistas, uma a uma -->
     <section class="screen" id="screen-mp-reveal">
-      <div class="reveal-progress" id="mp-reveal-prog">RONDA 1 / 2</div>
-      <div class="mp-reveal-name" id="mp-reveal-name">—</div>
-      <div class="mp-reveal-clue" id="mp-reveal-clue"></div>
-      <div class="spacer"></div>
-      <div id="mp-reveal-foot"></div>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-mpleave aria-label="Sair da sala" data-en-aria="Leave the room"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t" id="mp-reveal-prog"></h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body center-stack">
+        <p class="kicker" data-en="Clue from">Pista de</p>
+        <div class="mp-reveal-name" id="mp-reveal-name"></div>
+        <div class="mp-reveal-clue" id="mp-reveal-clue"></div>
+      </div>
+      <div class="dock" id="mp-reveal-foot"></div>
     </section>
 
     <!-- ONLINE: votação -->
     <section class="screen" id="screen-mp-vote">
-      <div class="reveal-progress">VOTAÇÃO</div>
-      <h2 class="center" id="mp-vote-head">Quem é o impostor?</h2>
-      <div class="mp-vote-list" id="mp-vote-list"></div>
-      <div class="spacer"></div>
-      <div id="mp-vote-foot"></div>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb icon" data-mpleave aria-label="Sair da sala" data-en-aria="Leave the room"><i class="ic" data-ic="xmark"></i></button></div>
+        <h1 class="nav-t" data-en="Vote">Votação</h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body flush">
+        <div class="lt"><h1 id="mp-vote-head"></h1></div>
+        <div class="list"><div class="group" id="mp-vote-list"></div></div>
+      </div>
+      <div class="dock" id="mp-vote-foot"></div>
     </section>
 
     <!-- ONLINE: resultado -->
     <section class="screen" id="screen-mp-result">
-      <div class="result-content">
-        <span class="kicker">FIM DE JOGO</span>
-        <p class="muted" id="mp-result-label">A palavra era:</p>
-        <div class="result-word" id="mp-result-word">—</div>
-        <p class="muted top-gap">Impostor(es):</p>
+      <header class="nav">
+        <div class="nav-l"><button type="button" class="nb" id="btn-mp-leave" data-en="Leave">Sair</button></div>
+        <h1 class="nav-t" data-en="Game over">Fim do jogo</h1>
+        <div class="nav-r"></div>
+      </header>
+      <div class="body center-stack">
+        <p class="verdict" id="mp-verdict"></p>
+        <p class="kicker" id="mp-result-label"></p>
+        <div class="result-word" id="mp-result-word"></div>
+        <p class="kicker top-gap" id="mp-imps-label"></p>
         <div class="impostor-reveal" id="mp-impostor-names"></div>
-        <div id="mp-vote-result"></div>
+        <p class="fine center" id="mp-vote-result"></p>
       </div>
-      <div id="mp-result-foot"></div>
-      <button class="btn btn-ghost btn-big" id="btn-mp-leave">Sair da sala</button>
+      <div class="dock" id="mp-result-foot"></div>
     </section>
 
-    <!-- Modal: nomes com gif -->
-    <div class="gif-modal" id="gif-modal" hidden>
-      <div class="gif-modal-card">
-        <h3>Nomes com gif 🎬</h3>
-        <p class="muted">Escreve o nome <b>exatamente assim</b> para o gif aparecer quando fores tu a começar.</p>
-        <div class="gif-names-list" id="gif-names-list"></div>
-        <button class="btn btn-dark btn-big" id="gif-modal-close">Fechar</button>
-      </div>
-    </div>
-
   </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script src="jm.js"></script>
   <script src="words.js"></script>
