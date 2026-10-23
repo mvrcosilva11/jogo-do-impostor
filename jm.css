@@ -115,11 +115,22 @@ html { font-size: 17px; }
   --tint-ink: var(--tint-dark, var(--tint));
 }
 
-/* as cores de cada joguinho */
-[data-game="impostor"] { --tint: var(--c-impostor); --tint-ink: #C23C47; --on-tint: var(--ink); }
-[data-game="cartas"] { --tint: var(--c-cartas); --tint-ink: #7F6B05; --on-tint: var(--ink); }
-[data-game="conexoes"] { --tint: var(--c-conexoes); --tint-ink: #7660B2; --on-tint: var(--ink); }
-[data-game="quem"] { --tint: var(--c-quem); --tint-ink: #1F7D49; --on-tint: var(--ink); }
+/* as cores de cada joguinho: a cor do jogo e o fundo tingido com ela (no claro e no escuro).
+   --tint-ink e --label-2 ficam mais escuros para o texto continuar legível em cima do fundo de cor. */
+[data-game="impostor"] { --tint: var(--c-impostor); --tint-ink: #A3323C; --on-tint: var(--ink); --bg: #FFCACF; --surface-2: #FFE3E5; --label-2: rgba(60, 60, 67, .84); }
+[data-game="cartas"] { --tint: var(--c-cartas); --tint-ink: #7C6905; --on-tint: var(--ink); --bg: #FFF3B6; --surface-2: #FFF8D8; --label-2: rgba(60, 60, 67, .84); }
+[data-game="conexoes"] { --tint: var(--c-conexoes); --tint-ink: #68549D; --on-tint: var(--ink); --bg: #E5DCFF; --surface-2: #F1ECFF; --label-2: rgba(60, 60, 67, .84); }
+[data-game="quem"] { --tint: var(--c-quem); --tint-ink: #1D7343; --on-tint: var(--ink); --bg: #C2F1D7; --surface-2: #DFF8EA; --label-2: rgba(60, 60, 67, .84); }
+@media (prefers-color-scheme: dark) {
+  :root[data-game="impostor"]:not([data-theme="light"]) { --bg: #2E0E11; --surface: #372226; --surface-2: #45292E; }
+  :root[data-game="cartas"]:not([data-theme="light"]) { --bg: #2E2702; --surface: #37321C; --surface-2: #443E22; }
+  :root[data-game="conexoes"]:not([data-theme="light"]) { --bg: #1E192E; --surface: #2D2939; --surface-2: #383247; }
+  :root[data-game="quem"]:not([data-theme="light"]) { --bg: #092616; --surface: #1F3229; --surface-2: #263E33; }
+}
+:root[data-game="impostor"][data-theme="dark"] { --bg: #2E0E11; --surface: #372226; --surface-2: #45292E; }
+:root[data-game="cartas"][data-theme="dark"] { --bg: #2E2702; --surface: #37321C; --surface-2: #443E22; }
+:root[data-game="conexoes"][data-theme="dark"] { --bg: #1E192E; --surface: #2D2939; --surface-2: #383247; }
+:root[data-game="quem"][data-theme="dark"] { --bg: #092616; --surface: #1F3229; --surface-2: #263E33; }
 [data-game="hub"] { --tint: var(--ink); --tint-ink: var(--ink); --on-tint: #FFFFFF; --tint-dark: #FFFFFF; }
 @media (prefers-color-scheme: dark) {
   :root[data-game="hub"]:not([data-theme="light"]) { --tint: #FFFFFF; --on-tint: #000000; }
