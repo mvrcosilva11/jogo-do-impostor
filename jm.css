@@ -176,6 +176,8 @@ h1, h2, h3, p { margin: 0; }
 /* ───────── ecrãs ───────── */
 
 .app { position: relative; max-width: var(--page); margin: 0 auto; }
+/* a entrada dos ecrãs vem 28 px da direita: sem isto, o Chrome do telemóvel alarga a página para lá caber e fica tudo mais pequeno */
+@media (max-width: 640px) { .app { overflow-x: clip; } }
 .screen {
   display: none;
   flex-direction: column;
