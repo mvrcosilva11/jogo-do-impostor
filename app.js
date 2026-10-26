@@ -99,6 +99,9 @@ function showScreen(id, back) { JM.screen(id, back || !!BACKWARD[id]); }
 function escapeHtml(s) { return JM.esc(s); }
 
 // ── Música de suspense (ecrã "quem começa"), em loop ──
+// É o único som dos Joguinhos do Marco: liga e desliga em Definições > Música.
+JM.hasMusic = true;
+window.addEventListener("jm:sound", (e) => { if (!e.detail) stopRoundMusic(); });
 // Só se descarrega quando é precisa (são quase 3 MB; abrir o jogo com dados móveis não a puxa).
 let roundAudio = null;
 function playRoundMusic() {

@@ -17,9 +17,10 @@
                JM.settingsExtra = function () { return [{ t: ['Como se joga', 'How to play'], ic: 'question', fn: f }] }
    Ecrãs       JM.screen(id, back) · JM.icons(raiz) desenha <i class="ic" data-ic="nome"> · JM.icon(nome)
    Avisos      JM.toast(texto) · JM.alert({ title, text, actions: [{ t, fn, cls }] }) · JM.sheet(html, { title }) / JM.closeSheet()
-   Som         JM.play('tap' | 'select' | 'toggle' | 'good' | 'bad' | 'almost' | 'win' | 'lose' | 'flip' | 'whoosh' | 'drum' | 'fire')
+   Som         Os joguinhos não têm sons (pedido do Marco): JM.play(nome) existe mas não faz nada. A única coisa que se ouve
+               é a música do Impostor, que usa JM.muted(); um jogo com música põe JM.hasMusic = true e aparece "Música" nas Definições.
    Fogo        JM.studio(on): só o efeito (som + chamas), sem mudar a escolha (ex.: a regra de uma sala do Cartas)
-   Sons sintetizados com Web Audio (sem ficheiros). Movimento reduzido: o fogo passa a um brilho curto. */
+   Movimento reduzido: o fogo passa a um brilho curto. */
 (function (root) {
   'use strict';
   var doc = root.document, html = doc.documentElement;
@@ -167,8 +168,7 @@
     });
     doc.querySelectorAll('.switch[data-jm="studio-toggle"]').forEach(function (b) { b.setAttribute('aria-checked', String(on)); });
   }
-  // Ligar: o fósforo, o ar a ser sugado, a explosão (as cores mudam aqui) e o fundo a arder.
-  // Desligar: o chiado da água, o fogo a apagar-se e as cores a voltar.
+  // Ligar: o ecrã encolhe, a explosão (as cores mudam aqui) e o fundo a arder. Desligar: o fogo apaga-se e as cores voltam.
   var studioT = null;
   function setStudio(on, quiet) {
     put(STUDIO, on ? '1' : '0');
@@ -178,9 +178,7 @@
     if (quiet || CALM) {
       paintStudio();
       fireBg(on, false);
-      if (!quiet) studioSound(on);
     } else if (on) {
-      studioSound(true);
       html.classList.add('jm-charge');
       studioT = setTimeout(function () {
         html.classList.remove('jm-charge');
@@ -191,7 +189,6 @@
         setTimeout(function () { html.classList.remove('jm-boom'); }, 600);
       }, 560);
     } else {
-      studioSound(false);
       fireBg(false, true);
       studioT = setTimeout(paintStudio, 650);
     }
@@ -365,8 +362,8 @@
       '<div class="row"><span class="tile-ic" style="--bg-ic:#5AB4FF;color:#111">' + icon('globe') + '</span><div class="row-b"><span class="row-x row-t">' + L('Língua', 'Language') + '</span>' +
       '<div class="seg" role="group" aria-label="' + L('Língua', 'Language') + '" style="min-width:170px"><button type="button" data-jm="lang" data-v="pt" aria-pressed="' + !en + '" lang="pt-PT">Português</button>' +
       '<button type="button" data-jm="lang" data-v="en" aria-pressed="' + en + '" lang="en">English</button></div></div></div>' +
-      '<div class="row"><span class="tile-ic" style="--bg-ic:#FF9F2E;color:#111">' + icon(on ? 'speaker' : 'speaker-off') + '</span><div class="row-b"><span class="row-x row-t">' + L('Som', 'Sound') + '</span>' +
-      '<button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="' + L('Som', 'Sound') + '" data-jm="sound"></button></div></div>' +
+      (JM.hasMusic ? '<div class="row"><span class="tile-ic" style="--bg-ic:#FF9F2E;color:#111">' + icon(on ? 'speaker' : 'speaker-off') + '</span><div class="row-b"><span class="row-x row-t">' + L('Música', 'Music') + '</span>' +
+      '<button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="' + L('Música', 'Music') + '" data-jm="sound"></button></div></div>' : '') +
       '<div class="row"><span class="tile-ic studio">' + icon('flame') + '</span><div class="row-b"><span class="row-x row-t">Studio Mode</span>' +
         '<button type="button" class="switch" role="switch" aria-checked="' + st + '" aria-label="Studio Mode" data-jm="studio-toggle"></button></div></div>' +
       '</div><p class="list-f">' + L('A língua muda tudo: os textos, as cartas e o que os outros escrevem, traduzido automaticamente.',
@@ -399,9 +396,9 @@
     if (a === 'sound') {
       put(SOUND, muted() ? '1' : '0');
       el.setAttribute('aria-checked', String(!muted()));
-      play('toggle');
       var ic = el.closest('.row').querySelector('.tile-ic');
       if (ic) ic.innerHTML = icon(muted() ? 'speaker-off' : 'speaker');
+      emit('jm:sound', !muted());
       return;
     }
     if (a === 'studio-toggle') { e.preventDefault(); setStudio(!studioOn()); }
@@ -415,159 +412,12 @@
     return h;
   }
 
-  /* ───────────────────────── som ───────────────────────── */
+  /* ───────────────────────── som ─────────────────────────
+     Sem sons nos joguinhos. Fica a escolha da música ("jm.sound"), que só o Impostor usa. */
 
-  var SOUND = 'jm.sound', ctx = null;
+  var SOUND = 'jm.sound';
   function muted() { return get(SOUND) === '0'; }
-  function ac() {
-    if (!ctx) {
-      var C = root.AudioContext || root.webkitAudioContext;
-      if (!C) return null;
-      ctx = new C();
-    }
-    if (ctx.state === 'suspended') ctx.resume();
-    return ctx;
-  }
-  function tone(f, at, dur, type, vol, to) {
-    var a = ctx, o = a.createOscillator(), g = a.createGain(), t = a.currentTime + at;
-    o.type = type || 'triangle';
-    o.frequency.setValueAtTime(f, t);
-    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol || 0.1, t + 0.008);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(a.destination);
-    o.start(t);
-    o.stop(t + dur + 0.02);
-  }
-  var noiseBuf = null;
-  function noise(at, dur, vol, type, freq, to, q) {
-    var a = ctx, t = a.currentTime + at;
-    if (!noiseBuf) {
-      noiseBuf = a.createBuffer(1, a.sampleRate, a.sampleRate);
-      var d = noiseBuf.getChannelData(0);
-      for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    }
-    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
-    s.buffer = noiseBuf;
-    s.loop = true;
-    f.type = type || 'bandpass';
-    f.frequency.setValueAtTime(freq || 1200, t);
-    if (to) f.frequency.exponentialRampToValueAtTime(to, t + dur);
-    f.Q.value = q || 0.8;
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol || 0.1, t + Math.min(0.05, dur / 3));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    s.connect(f).connect(g).connect(a.destination);
-    s.start(t, Math.random() * 0.5);
-    s.stop(t + dur + 0.05);
-  }
-  var SOUNDS = {
-    tap: function () { tone(880, 0, 0.05, 'triangle', 0.06); },
-    select: function () { tone(620, 0, 0.06, 'sine', 0.09, 760); },
-    toggle: function () { tone(520, 0, 0.07, 'triangle', 0.08); tone(780, 0.06, 0.08, 'triangle', 0.08); },
-    good: function () { [523, 659, 784, 1046].forEach(function (f, i) { tone(f, i * 0.07, 0.16, 'triangle', 0.11); }); },
-    bad: function () { tone(150, 0, 0.28, 'sawtooth', 0.07, 85); noise(0, 0.12, 0.05, 'lowpass', 500); },
-    almost: function () { tone(660, 0, 0.08, 'square', 0.05); tone(660, 0.12, 0.12, 'square', 0.05, 520); },
-    win: function () {
-      [523, 659, 784, 1046, 1318].forEach(function (f, i) { tone(f, i * 0.09, 0.3, 'triangle', 0.1); });
-      for (var i = 0; i < 6; i++) tone(1800 + Math.random() * 1600, 0.5 + i * 0.06, 0.12, 'sine', 0.04);
-    },
-    lose: function () { [392, 330, 262, 196].forEach(function (f, i) { tone(f, i * 0.16, 0.3, 'triangle', 0.09); }); },
-    flip: function () { noise(0, 0.14, 0.09, 'bandpass', 2400, 700, 1.2); },
-    whoosh: function () { noise(0, 0.38, 0.12, 'bandpass', 300, 3200, 0.9); },
-    drum: function () { tone(110, 0, 0.35, 'sine', 0.25, 45); noise(0, 0.08, 0.06, 'lowpass', 900); },
-    fire: function () {
-      noise(0, 0.5, 0.16, 'bandpass', 200, 2600, 0.7);
-      noise(0.1, 1.8, 0.12, 'lowpass', 380, 220);
-      for (var i = 0; i < 18; i++) noise(0.15 + Math.random() * 1.5, 0.02 + Math.random() * 0.03, 0.18, 'highpass', 2500 + Math.random() * 3000);
-      tone(70, 0, 0.6, 'sine', 0.18, 40);
-    }
-  };
-  function play(name) {
-    if (muted() || !SOUNDS[name]) return;
-    try { if (ac()) SOUNDS[name](); } catch (e) {}
-  }
-
-  /* ── o som do Studio Mode: maior que os outros, por isso passa por um compressor ── */
-  var bus = null;
-  function out() {
-    if (!bus) {
-      bus = ctx.createDynamicsCompressor();
-      bus.threshold.value = -16; bus.knee.value = 12; bus.ratio.value = 4; bus.attack.value = 0.003; bus.release.value = 0.25;
-      bus.connect(ctx.destination);
-    }
-    return bus;
-  }
-  // ruído filtrado com o envelope à medida: { at, dur, f0, f1, type, q, v, attack }
-  function nz(o) {
-    var a = ctx, t = a.currentTime + (o.at || 0), d = o.dur;
-    if (!noiseBuf) noise(0, 0.001, 0.0001);                     // cria o ruído partilhado
-    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
-    s.buffer = noiseBuf;
-    s.loop = true;
-    f.type = o.type || 'bandpass';
-    f.Q.value = o.q || 0.8;
-    f.frequency.setValueAtTime(o.f0, t);
-    if (o.f1) f.frequency.exponentialRampToValueAtTime(o.f1, t + d);
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(o.v, t + Math.max(0.004, o.attack != null ? o.attack : 0.01));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-    s.connect(f).connect(g).connect(out());
-    s.start(t, Math.random() * 0.5);
-    s.stop(t + d + 0.05);
-  }
-  // um oscilador com envelope e, se for preciso, um filtro que abre e fecha: { at, dur, type, f0, f1, v, attack, detune, lp: { f0, f1, t1, f2, q } }
-  function osc(o) {
-    var a = ctx, t = a.currentTime + (o.at || 0), d = o.dur, n = a.createOscillator(), g = a.createGain(), last = n;
-    n.type = o.type || 'sawtooth';
-    n.frequency.setValueAtTime(o.f0, t);
-    if (o.f1) n.frequency.exponentialRampToValueAtTime(o.f1, t + d);
-    if (o.detune) n.detune.value = o.detune;
-    if (o.lp) {
-      var f = a.createBiquadFilter();
-      f.type = 'lowpass';
-      f.Q.value = o.lp.q || 4;
-      f.frequency.setValueAtTime(o.lp.f0, t);
-      f.frequency.exponentialRampToValueAtTime(o.lp.f1, t + (o.lp.t1 || 0.08));
-      if (o.lp.f2) f.frequency.exponentialRampToValueAtTime(o.lp.f2, t + d);
-      last.connect(f);
-      last = f;
-    }
-    g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(o.v, t + (o.attack || 0.01));
-    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-    last.connect(g).connect(out());
-    n.start(t);
-    n.stop(t + d + 0.05);
-  }
-  function igniteSound() {
-    nz({ at: 0, dur: 0.07, f0: 3200, type: 'highpass', v: 0.22, attack: 0.004 });          // o fósforo a riscar
-    nz({ at: 0.05, dur: 0.05, f0: 5200, type: 'highpass', v: 0.12, attack: 0.003 });
-    nz({ at: 0.08, dur: 0.5, f0: 240, f1: 3600, q: 1.4, v: 0.2, attack: 0.46 });           // o ar a ser sugado
-    osc({ at: 0.1, dur: 0.48, type: 'sine', f0: 180, f1: 760, v: 0.05, attack: 0.44 });
-    var B = 0.56;                                                                         // a explosão
-    osc({ at: B, dur: 1.1, type: 'sine', f0: 130, f1: 34, v: 0.55, attack: 0.005 });
-    osc({ at: B, dur: 0.5, type: 'triangle', f0: 90, f1: 40, v: 0.3, attack: 0.005 });
-    nz({ at: B, dur: 0.7, f0: 900, f1: 180, type: 'lowpass', q: 0.7, v: 0.45, attack: 0.004 });
-    nz({ at: B, dur: 1, f0: 5000, f1: 9000, q: 0.9, v: 0.07, attack: 0.02 });
-    [73.42, 146.83, 220, 293.66, 349.23].forEach(function (f, i) {                          // o acorde: Ré menor, serras a abrir o filtro
-      [-9, 9].forEach(function (dt) { osc({ at: B, dur: 1.9, type: 'sawtooth', f0: f, detune: dt, v: i === 0 ? 0.09 : 0.05, attack: 0.015, lp: { f0: 300, f1: 3200, t1: 0.09, f2: 480, q: 5 } }); });
-    });
-    nz({ at: B + 0.05, dur: 2.6, f0: 520, f1: 260, type: 'lowpass', q: 0.6, v: 0.16, attack: 0.15 });   // o fogo a rugir
-    for (var i = 0; i < 34; i++) nz({ at: B + 0.1 + Math.random() * 2.6, dur: 0.012 + Math.random() * 0.03, f0: 2600 + Math.random() * 4200, type: 'highpass', v: 0.08 + Math.random() * 0.2, attack: 0.002 });   // e a crepitar
-  }
-  function extinguishSound() {
-    nz({ at: 0, dur: 1.1, f0: 1800, f1: 5200, type: 'highpass', v: 0.2, attack: 0.02 });   // água em cima do fogo
-    for (var i = 0; i < 10; i++) nz({ at: Math.random() * 0.7, dur: 0.08 + Math.random() * 0.1, f0: 6000 + Math.random() * 2000, q: 2, v: 0.05 + Math.random() * 0.06, attack: 0.01 });
-    [146.83, 220, 293.66].forEach(function (f) { osc({ at: 0, dur: 0.7, type: 'sawtooth', f0: f, f1: f / 2.2, v: 0.05, attack: 0.01, lp: { f0: 2200, f1: 1600, t1: 0.05, f2: 160, q: 3 } }); });
-    osc({ at: 0.05, dur: 0.4, type: 'sine', f0: 90, f1: 38, v: 0.32, attack: 0.004 });
-    for (var k = 0; k < 6; k++) nz({ at: 0.3 + k * 0.12 + Math.random() * 0.1, dur: 0.015, f0: 3000 + Math.random() * 2000, type: 'highpass', v: 0.12 - k * 0.015, attack: 0.002 });
-  }
-  function studioSound(on) {
-    if (muted()) return;
-    try { if (ac()) (on ? igniteSound : extinguishSound)(); } catch (e) {}
-  }
+  function play() {}
 
   /* ───────────────────────── o fogo do Studio Mode ───────────────────────── */
 
@@ -613,8 +463,7 @@
     try { if (navigator.vibrate) navigator.vibrate([30, 40, 60]); } catch (e) {}
   }
   function studio(on) {
-    studioSound(on);
-    if (on && !CALM) setTimeout(fire, 560);
+    if (on && !CALM) fire();
   }
 
   /* ── o fundo de fogo: um gradiente de brasa, partículas de fogo e brasas num canvas, e as chamas da casa em baixo ── */
