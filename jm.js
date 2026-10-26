@@ -9,14 +9,16 @@
                "de" é a língua de quem escreveu (o mais seguro: a deteção engana-se em palavras soltas, como "Mar");
                sem ela, só se traduz se o texto for detetado na outra língua do jogo.
    Studio Mode JM.studioOn() · JM.setStudio(on) · JM.door(el)
-               Desligado não deixa rasto: não há interruptor à vista. Liga-se a carregar 3 s no símbolo da casa,
-               ou com o endereço /studio (ou ?studio=1). Ligado, aparece nas Definições para se desligar.
+               O interruptor está no início de cada joguinho e da página inicial (<div data-jm-studio-row>, o jm.js
+               desenha-o) e nas Definições; também o /studio (ou ?studio=1) e 3 s em cima do símbolo da casa.
+               Ligado, o fundo de tudo passa a fogo animado (partículas, brasas e as chamas da casa), com som.
+               O que é do pessoal continua em ficheiros à parte, só descarregados com ele ligado.
    Definições  JM.settings() abre a folha comum (língua, som, Studio Mode); qualquer [data-jm="settings"] a abre.
                JM.settingsExtra = function () { return [{ t: ['Como se joga', 'How to play'], ic: 'question', fn: f }] }
    Ecrãs       JM.screen(id, back) · JM.icons(raiz) desenha <i class="ic" data-ic="nome"> · JM.icon(nome)
    Avisos      JM.toast(texto) · JM.alert({ title, text, actions: [{ t, fn, cls }] }) · JM.sheet(html, { title }) / JM.closeSheet()
    Som         JM.play('tap' | 'select' | 'toggle' | 'good' | 'bad' | 'almost' | 'win' | 'lose' | 'flip' | 'whoosh' | 'drum' | 'fire')
-   Fogo        JM.studio(on): fogo pelo ecrã + crepitar ao ligar o Studio Mode
+   Fogo        JM.studio(on): só o efeito (som + chamas), sem mudar a escolha (ex.: a regra de uma sala do Cartas)
    Sons sintetizados com Web Audio (sem ficheiros). Movimento reduzido: o fogo passa a um brilho curto. */
 (function (root) {
   'use strict';
@@ -144,14 +146,55 @@
   if (get(STUDIO) === null && (get('impostor.studio') === '1' || legacy('ccm.me', 'studio') === true)) put(STUDIO, '1');    // as escolhas antigas
   dropParams(['studio', 'lang']);
   function studioOn() { return get(STUDIO) === '1'; }
+  // as cores: com o Studio Mode, o escuro do fogo (jm.css) e a barra do Safari na mesma cor
   function paintStudio() {
-    if (studioOn()) html.setAttribute('data-studio', '1');
+    var on = studioOn();
+    if (on) html.setAttribute('data-studio', '1');
     else html.removeAttribute('data-studio');
+    doc.querySelectorAll('meta[name="theme-color"]').forEach(function (m) {
+      if (!m.hasAttribute('data-orig')) m.setAttribute('data-orig', m.getAttribute('content'));
+      m.setAttribute('content', on ? '#170503' : m.getAttribute('data-orig'));
+    });
   }
+  // todos os interruptores do Studio Mode à vista ficam com o mesmo estado
+  function studioRows() {
+    var on = studioOn();
+    doc.querySelectorAll('[data-jm-studio-row]').forEach(function (box) {
+      box.innerHTML = '<div class="group studio-row"><div class="row big" data-jm="studio-toggle"><span class="tile-ic lg studio">' + icon('flame') + '</span>' +
+        '<div class="row-b"><span class="row-x"><span class="row-t">Studio Mode</span><span class="row-s">' +
+        (on ? L('Ligado: o pessoal do estúdio está em jogo.', 'On: the studio crew is in the game.') : L('Os nomes e as piadas cá de casa. Com fogo.', 'The house names and inside jokes. With fire.')) +
+        '</span></span><button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="Studio Mode" data-jm="studio-toggle"></button></div></div></div>';
+    });
+    doc.querySelectorAll('.switch[data-jm="studio-toggle"]').forEach(function (b) { b.setAttribute('aria-checked', String(on)); });
+  }
+  // Ligar: o fósforo, o ar a ser sugado, a explosão (as cores mudam aqui) e o fundo a arder.
+  // Desligar: o chiado da água, o fogo a apagar-se e as cores a voltar.
+  var studioT = null;
   function setStudio(on, quiet) {
     put(STUDIO, on ? '1' : '0');
-    paintStudio();
-    if (!quiet) studio(on);
+    studioRows();
+    clearTimeout(studioT);
+    html.classList.remove('jm-charge');
+    if (quiet || CALM) {
+      paintStudio();
+      fireBg(on, false);
+      if (!quiet) studioSound(on);
+    } else if (on) {
+      studioSound(true);
+      html.classList.add('jm-charge');
+      studioT = setTimeout(function () {
+        html.classList.remove('jm-charge');
+        paintStudio();
+        fireBg(true, true);
+        fire();
+        html.classList.add('jm-boom');
+        setTimeout(function () { html.classList.remove('jm-boom'); }, 600);
+      }, 560);
+    } else {
+      studioSound(false);
+      fireBg(false, true);
+      studioT = setTimeout(paintStudio, 650);
+    }
     emit('jm:studio', !!on);
   }
   paintStudio();
@@ -324,8 +367,8 @@
       '<button type="button" data-jm="lang" data-v="en" aria-pressed="' + en + '" lang="en">English</button></div></div></div>' +
       '<div class="row"><span class="tile-ic" style="--bg-ic:#FF9F2E;color:#111">' + icon(on ? 'speaker' : 'speaker-off') + '</span><div class="row-b"><span class="row-x row-t">' + L('Som', 'Sound') + '</span>' +
       '<button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="' + L('Som', 'Sound') + '" data-jm="sound"></button></div></div>' +
-      (st ? '<div class="row"><span class="tile-ic studio">' + icon('flame') + '</span><div class="row-b"><span class="row-x row-t">Studio Mode</span>' +
-        '<button type="button" class="switch" role="switch" aria-checked="true" aria-label="Studio Mode" data-jm="studio"></button></div></div>' : '') +
+      '<div class="row"><span class="tile-ic studio">' + icon('flame') + '</span><div class="row-b"><span class="row-x row-t">Studio Mode</span>' +
+        '<button type="button" class="switch" role="switch" aria-checked="' + st + '" aria-label="Studio Mode" data-jm="studio-toggle"></button></div></div>' +
       '</div><p class="list-f">' + L('A língua muda tudo: os textos, as cartas e o que os outros escrevem, traduzido automaticamente.',
         'Language changes everything: the texts, the cards and what other players write, translated automatically.') + '</p></div>';
     if (extra.length) {
@@ -361,7 +404,7 @@
       if (ic) ic.innerHTML = icon(muted() ? 'speaker-off' : 'speaker');
       return;
     }
-    if (a === 'studio') { setStudio(false); closeSheet(); toast(L('Studio Mode desligado', 'Studio Mode off')); }
+    if (a === 'studio-toggle') { e.preventDefault(); setStudio(!studioOn()); }
   });
   doc.addEventListener('keydown', function (e) { if (e.key === 'Escape' && layer) closeSheet(); });
 
@@ -446,6 +489,86 @@
     try { if (ac()) SOUNDS[name](); } catch (e) {}
   }
 
+  /* ── o som do Studio Mode: maior que os outros, por isso passa por um compressor ── */
+  var bus = null;
+  function out() {
+    if (!bus) {
+      bus = ctx.createDynamicsCompressor();
+      bus.threshold.value = -16; bus.knee.value = 12; bus.ratio.value = 4; bus.attack.value = 0.003; bus.release.value = 0.25;
+      bus.connect(ctx.destination);
+    }
+    return bus;
+  }
+  // ruído filtrado com o envelope à medida: { at, dur, f0, f1, type, q, v, attack }
+  function nz(o) {
+    var a = ctx, t = a.currentTime + (o.at || 0), d = o.dur;
+    if (!noiseBuf) noise(0, 0.001, 0.0001);                     // cria o ruído partilhado
+    var s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    s.buffer = noiseBuf;
+    s.loop = true;
+    f.type = o.type || 'bandpass';
+    f.Q.value = o.q || 0.8;
+    f.frequency.setValueAtTime(o.f0, t);
+    if (o.f1) f.frequency.exponentialRampToValueAtTime(o.f1, t + d);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.v, t + Math.max(0.004, o.attack != null ? o.attack : 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(f).connect(g).connect(out());
+    s.start(t, Math.random() * 0.5);
+    s.stop(t + d + 0.05);
+  }
+  // um oscilador com envelope e, se for preciso, um filtro que abre e fecha: { at, dur, type, f0, f1, v, attack, detune, lp: { f0, f1, t1, f2, q } }
+  function osc(o) {
+    var a = ctx, t = a.currentTime + (o.at || 0), d = o.dur, n = a.createOscillator(), g = a.createGain(), last = n;
+    n.type = o.type || 'sawtooth';
+    n.frequency.setValueAtTime(o.f0, t);
+    if (o.f1) n.frequency.exponentialRampToValueAtTime(o.f1, t + d);
+    if (o.detune) n.detune.value = o.detune;
+    if (o.lp) {
+      var f = a.createBiquadFilter();
+      f.type = 'lowpass';
+      f.Q.value = o.lp.q || 4;
+      f.frequency.setValueAtTime(o.lp.f0, t);
+      f.frequency.exponentialRampToValueAtTime(o.lp.f1, t + (o.lp.t1 || 0.08));
+      if (o.lp.f2) f.frequency.exponentialRampToValueAtTime(o.lp.f2, t + d);
+      last.connect(f);
+      last = f;
+    }
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(o.v, t + (o.attack || 0.01));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    last.connect(g).connect(out());
+    n.start(t);
+    n.stop(t + d + 0.05);
+  }
+  function igniteSound() {
+    nz({ at: 0, dur: 0.07, f0: 3200, type: 'highpass', v: 0.22, attack: 0.004 });          // o fósforo a riscar
+    nz({ at: 0.05, dur: 0.05, f0: 5200, type: 'highpass', v: 0.12, attack: 0.003 });
+    nz({ at: 0.08, dur: 0.5, f0: 240, f1: 3600, q: 1.4, v: 0.2, attack: 0.46 });           // o ar a ser sugado
+    osc({ at: 0.1, dur: 0.48, type: 'sine', f0: 180, f1: 760, v: 0.05, attack: 0.44 });
+    var B = 0.56;                                                                         // a explosão
+    osc({ at: B, dur: 1.1, type: 'sine', f0: 130, f1: 34, v: 0.55, attack: 0.005 });
+    osc({ at: B, dur: 0.5, type: 'triangle', f0: 90, f1: 40, v: 0.3, attack: 0.005 });
+    nz({ at: B, dur: 0.7, f0: 900, f1: 180, type: 'lowpass', q: 0.7, v: 0.45, attack: 0.004 });
+    nz({ at: B, dur: 1, f0: 5000, f1: 9000, q: 0.9, v: 0.07, attack: 0.02 });
+    [73.42, 146.83, 220, 293.66, 349.23].forEach(function (f, i) {                          // o acorde: Ré menor, serras a abrir o filtro
+      [-9, 9].forEach(function (dt) { osc({ at: B, dur: 1.9, type: 'sawtooth', f0: f, detune: dt, v: i === 0 ? 0.09 : 0.05, attack: 0.015, lp: { f0: 300, f1: 3200, t1: 0.09, f2: 480, q: 5 } }); });
+    });
+    nz({ at: B + 0.05, dur: 2.6, f0: 520, f1: 260, type: 'lowpass', q: 0.6, v: 0.16, attack: 0.15 });   // o fogo a rugir
+    for (var i = 0; i < 34; i++) nz({ at: B + 0.1 + Math.random() * 2.6, dur: 0.012 + Math.random() * 0.03, f0: 2600 + Math.random() * 4200, type: 'highpass', v: 0.08 + Math.random() * 0.2, attack: 0.002 });   // e a crepitar
+  }
+  function extinguishSound() {
+    nz({ at: 0, dur: 1.1, f0: 1800, f1: 5200, type: 'highpass', v: 0.2, attack: 0.02 });   // água em cima do fogo
+    for (var i = 0; i < 10; i++) nz({ at: Math.random() * 0.7, dur: 0.08 + Math.random() * 0.1, f0: 6000 + Math.random() * 2000, q: 2, v: 0.05 + Math.random() * 0.06, attack: 0.01 });
+    [146.83, 220, 293.66].forEach(function (f) { osc({ at: 0, dur: 0.7, type: 'sawtooth', f0: f, f1: f / 2.2, v: 0.05, attack: 0.01, lp: { f0: 2200, f1: 1600, t1: 0.05, f2: 160, q: 3 } }); });
+    osc({ at: 0.05, dur: 0.4, type: 'sine', f0: 90, f1: 38, v: 0.32, attack: 0.004 });
+    for (var k = 0; k < 6; k++) nz({ at: 0.3 + k * 0.12 + Math.random() * 0.1, dur: 0.015, f0: 3000 + Math.random() * 2000, type: 'highpass', v: 0.12 - k * 0.015, attack: 0.002 });
+  }
+  function studioSound(on) {
+    if (muted()) return;
+    try { if (ac()) (on ? igniteSound : extinguishSound)(); } catch (e) {}
+  }
+
   /* ───────────────────────── o fogo do Studio Mode ───────────────────────── */
 
   var CSS = '' +
@@ -490,8 +613,102 @@
     try { if (navigator.vibrate) navigator.vibrate([30, 40, 60]); } catch (e) {}
   }
   function studio(on) {
-    if (on) { fire(); play('fire'); }
-    else play('toggle');
+    studioSound(on);
+    if (on && !CALM) setTimeout(fire, 560);
+  }
+
+  /* ── o fundo de fogo: um gradiente de brasa, partículas de fogo e brasas num canvas, e as chamas da casa em baixo ── */
+  var FB = null;
+  function fireBg(on, animate) {
+    if (on) startBg(animate);
+    else stopBg(animate);
+  }
+  function startBg(animate) {
+    if (FB) return;
+    var el = doc.createElement('div'), n = Math.max(6, Math.round(innerWidth / 62)), fl = '', i;
+    el.className = 'jm-firebg';
+    el.setAttribute('aria-hidden', 'true');
+    for (i = 0; i < n; i++) {
+      fl += flame(56 + Math.random() * 84, { x: (i + 0.5) * 100 / n + (Math.random() * 8 - 4), d: Math.random() * 0.6 })
+        .replace('animation-delay', '--d:' + (0.32 + Math.random() * 0.4).toFixed(2) + 's;animation-delay');
+    }
+    el.innerHTML = '<canvas></canvas><div class="jm-flames">' + fl + '</div>';
+    doc.body.insertBefore(el, doc.body.firstChild);
+    FB = { el: el, raf: 0, parts: [], dying: false, smoke: 0 };
+    if (!animate) el.classList.add('now');
+    void el.offsetWidth;
+    el.classList.add('on');
+    if (!CALM) burn(FB);
+  }
+  function stopBg(animate) {
+    if (!FB) return;
+    var F = FB;
+    FB = null;
+    function end() { cancelAnimationFrame(F.raf); if (F.resize) root.removeEventListener('resize', F.resize); F.el.remove(); }
+    if (!animate || CALM) { end(); return; }
+    F.dying = true;
+    F.smoke = 16;
+    F.el.classList.add('out');
+    setTimeout(end, 1500);
+  }
+  function sprite(rgb, soft) {
+    var c = doc.createElement('canvas'), g = c.getContext('2d'), gr;
+    c.width = c.height = 64;
+    gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(' + rgb + ',1)');
+    gr.addColorStop(soft ? 0.6 : 0.4, 'rgba(' + rgb + ',' + (soft ? 0.35 : 0.45) + ')');
+    gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 64, 64);
+    return c;
+  }
+  function burn(F) {
+    var cv = F.el.querySelector('canvas'), cx = cv.getContext('2d'), S = 0.5, W = 0, H = 0, last = 0;
+    var SPR = [sprite('255,236,150'), sprite('255,150,50'), sprite('235,60,35')], SMOKE = sprite('70,60,58', true);
+    F.resize = function () { W = cv.width = Math.ceil(innerWidth * S); H = cv.height = Math.ceil(innerHeight * S); };
+    F.resize();
+    root.addEventListener('resize', F.resize);
+    function frame(t) {
+      F.raf = requestAnimationFrame(frame);
+      if (doc.hidden || t - last < 32) return;               // ~30 imagens por segundo chegam e poupam a bateria
+      last = t;
+      var P = F.parts, k, p, q, r;
+      if (!F.dying) {
+        for (k = Math.max(3, Math.round(W / 45)); k > 0; k--) P.push({ x: Math.random() * W, y: H + 6, vx: (Math.random() - 0.5) * 0.5, vy: -(1 + Math.random() * 1.6), r: 10 + Math.random() * 16, t: 0, m: 40 + Math.random() * 40 });
+        if (Math.random() < 0.55) P.push({ x: Math.random() * W, y: H, vx: (Math.random() - 0.5) * 0.6, vy: -(1.4 + Math.random() * 1.6), r: 0.9 + Math.random() * 1.2, t: 0, m: 90 + Math.random() * 120, e: 1, ph: Math.random() * 6 });
+      } else if (F.smoke-- > 0) {
+        for (k = 0; k < 3; k++) P.push({ x: Math.random() * W, y: H * (0.75 + Math.random() * 0.3), vx: (Math.random() - 0.5) * 0.4, vy: -(0.4 + Math.random() * 0.6), r: 20 + Math.random() * 26, t: 0, m: 50 + Math.random() * 30, s: 1 });
+      }
+      cx.globalCompositeOperation = 'source-over';
+      cx.globalAlpha = 1;
+      cx.clearRect(0, 0, W, H);
+      for (k = P.length - 1; k >= 0; k--) {
+        p = P[k];
+        p.t++;
+        q = p.t / p.m;
+        if (q >= 1 || p.y < -30) { P.splice(k, 1); continue; }
+        p.x += p.vx + (p.e ? Math.sin(p.t / 9 + p.ph) * 0.35 : 0);
+        p.y += p.vy;
+        if (p.s) {                                           // fumo, ao apagar
+          cx.globalCompositeOperation = 'source-over';
+          cx.globalAlpha = 0.4 * (1 - q);
+          r = p.r * (1 + q);
+          cx.drawImage(SMOKE, p.x - r, p.y - r, r * 2, r * 2);
+          continue;
+        }
+        cx.globalCompositeOperation = 'lighter';
+        if (p.e) {                                           // brasa
+          cx.globalAlpha = 1 - q;
+          r = p.r * 3;
+          cx.drawImage(SPR[0], p.x - r, p.y - r, r * 2, r * 2);
+          continue;
+        }
+        r = p.r * (1 - q * 0.55);                            // fogo: amarelo, laranja, vermelho
+        cx.globalAlpha = 0.55 * (1 - q);
+        cx.drawImage(SPR[q < 0.3 ? 0 : q < 0.65 ? 1 : 2], p.x - r, p.y - r, r * 2, r * 2);
+      }
+    }
+    F.raf = requestAnimationFrame(frame);
   }
 
   var JM = root.JM = {
@@ -506,6 +723,9 @@
   function boot() {
     i18n();
     icons();
+    studioRows();
+    if (studioOn()) fireBg(true, false);
+    root.addEventListener('jm:lang', studioRows);
     doc.querySelectorAll('a[data-jm-home]').forEach(function (a) { a.href = home(); });
     doc.querySelectorAll('[data-jm-door]').forEach(door);
     scrolled();

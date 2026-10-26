@@ -137,6 +137,29 @@ html { font-size: 17px; }
 }
 :root[data-game="hub"][data-theme="dark"] { --tint: #FFFFFF; --on-tint: #000000; }
 
+/* Studio Mode ligado: o escuro do fogo em todos os joguinhos, por cima do claro, do escuro e das cores de cada jogo.
+   As superfícies ficam um pouco transparentes para o fogo se ver por trás. */
+:root[data-studio="1"][data-game] {
+  color-scheme: dark;
+  --bg: #170503;
+  --surface: rgba(42, 17, 12, .9);
+  --surface-2: rgba(60, 25, 18, .92);
+  --label: #FFFFFF;
+  --label-2: rgba(255, 236, 226, .76);
+  --label-3: rgba(255, 236, 226, .34);
+  --sep: rgba(255, 170, 140, .2);
+  --fill: rgba(255, 200, 180, .22);
+  --fill-2: rgba(255, 200, 180, .17);
+  --fill-3: rgba(255, 200, 180, .13);
+  --danger: #FF6961;
+  --glass: rgba(70, 24, 14, .55);
+  --glass-strong: rgba(48, 18, 12, .92);
+  --glass-edge: inset 0 0 0 .5px rgba(255, 190, 150, .22), inset 1.5px 1.5px 1px -1px rgba(255, 210, 170, .38), 0 0 0 .5px rgba(0, 0, 0, .4), 0 6px 22px rgba(0, 0, 0, .4);
+  --lift: 0 0 0 .5px rgba(255, 170, 120, .14), 0 8px 24px rgba(0, 0, 0, .3);
+  --tint-ink: var(--tint);
+}
+:root[data-studio="1"][data-game="hub"] { --tint: #FFFFFF; --on-tint: #000000; --tint-ink: #FFFFFF; }
+
 /* ───────── base ───────── */
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -685,3 +708,56 @@ dialog.sheet::backdrop { background: rgba(0, 0, 0, .22); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
 }
+
+/* ───────── Studio Mode: o fundo de fogo (jm.js desenha-o por trás de tudo) ───────── */
+
+html[data-studio="1"] { background: #170503; }
+html[data-studio="1"] body { background: transparent; }
+html[data-studio="1"] .seg { --seg-on: rgba(255, 255, 255, .26); }
+html[data-studio="1"] .dock::before { background: linear-gradient(color-mix(in srgb, #170503 0%, transparent), rgba(23, 5, 3, .55) 60%); }
+.jm-firebg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 55% at 50% 108%, #FFB347 0%, #FF6A2A 15%, #E2311D 30%, rgba(122, 14, 10, .92) 52%, transparent 78%),
+    linear-gradient(#120402, #1C0604 55%, #3A0A06);
+  opacity: 0;
+  transition: opacity .9s ease;
+}
+.jm-firebg.on { opacity: 1; }
+.jm-firebg.now { transition: none; }
+.jm-firebg.out { opacity: 0; transition: opacity 1.1s ease .25s; }
+.jm-firebg canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.jm-flames { position: absolute; left: -4%; right: -4%; bottom: -3vh; height: 22vh; transition: transform 1s cubic-bezier(.5, 0, .75, 0); }
+.jm-firebg.out .jm-flames { transform: translateY(26vh) scaleY(.4); }
+.jm-flames svg { position: absolute; bottom: 0; transform-origin: 50% 100%; animation: jm-lick var(--d, .5s) ease-in-out infinite alternate; filter: drop-shadow(0 0 16px rgba(255, 120, 40, .55)); }
+@keyframes jm-lick { from { transform: scale(1, .9) skewX(-4deg); } to { transform: scale(1.05, 1.1) skewX(5deg); } }
+
+/* nos ecrãs sem botão em baixo, o fim do conteúdo sobe acima das chamas */
+html[data-studio="1"] .screen:not(:has(> .dock))::after { content: ""; display: block; flex: none; height: 16vh; }
+
+/* o interruptor: arde quando está ligado */
+.studio-row .row { cursor: pointer; }
+html[data-studio="1"] .studio-row { box-shadow: 0 0 0 1.5px rgba(255, 150, 70, .75), 0 0 30px rgba(255, 90, 40, .45); }
+html[data-studio="1"] .studio-row .switch[aria-checked="true"] { --switch-on: linear-gradient(90deg, #FF9F2E, #FF4F5E); background: linear-gradient(90deg, #FF9F2E, #FF4F5E); }
+
+/* ao ligar: o ecrã encolhe enquanto o ar é sugado e treme com a explosão */
+.app { transition: transform .5s cubic-bezier(.5, 0, 1, 1), filter .5s ease; }
+html.jm-charge .app { transform: scale(.965); filter: saturate(1.4) brightness(1.08); }
+html.jm-boom .app { animation: jm-boom .5s cubic-bezier(.3, .7, .4, 1) both; }
+@keyframes jm-boom {
+  0% { transform: scale(1.02) translate(0, 0); }
+  20% { transform: translate(-6px, 3px); }
+  40% { transform: translate(5px, -4px); }
+  60% { transform: translate(-3px, 2px); }
+  80% { transform: translate(2px, -1px); }
+  100% { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jm-flames svg { animation: none; }
+  html.jm-charge .app, html.jm-boom .app { transform: none; animation: none; }
+}
+

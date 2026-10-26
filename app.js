@@ -526,7 +526,7 @@ function paintHome() {
   withStudio(() => {
     if (!JM.studioOn() || !window.WORDS_STUDIO) return;
     const on = localStorage.getItem(CREW_KEY) !== "0";
-    box.innerHTML = '<h2 class="list-h">Studio Mode</h2><div class="group">' +
+    box.innerHTML = '<h2 class="list-h">' + L('Só no Studio Mode', 'Studio Mode only') + '</h2><div class="group">' +
       '<div class="row"><span class="tile-ic studio">' + JM.icon("flame") + '</span><div class="row-b"><span class="row-x"><span class="row-t">' + L("Palavras do pessoal", "The crew's words") + "</span>" +
       '<span class="row-s">' + L("Os nomes do estúdio entram no baralho, com pistas que rimam.", "The studio names join the deck, with rhyming clues.") + "</span></span>" +
       '<button type="button" class="switch" role="switch" id="crew-sw" aria-checked="' + on + '" aria-label="' + L("Palavras do pessoal", "The crew's words") + '"></button></div></div>' +
