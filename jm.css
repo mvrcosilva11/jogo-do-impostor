@@ -49,6 +49,7 @@ html { font-size: 17px; }
   --c-cartas: #FFD60A;
   --c-conexoes: #A989FF;
   --c-quem: #34D17A;
+  --c-angry: #FF9F2E;
   --c-orange: #FF9F2E;
   --c-blue: #5AB4FF;
 
@@ -121,16 +122,19 @@ html { font-size: 17px; }
 [data-game="cartas"] { --tint: var(--c-cartas); --tint-ink: #7C6905; --on-tint: var(--ink); --bg: #FFF3B6; --surface-2: #FFF8D8; --label-2: rgba(60, 60, 67, .84); }
 [data-game="conexoes"] { --tint: var(--c-conexoes); --tint-ink: #68549D; --on-tint: var(--ink); --bg: #E5DCFF; --surface-2: #F1ECFF; --label-2: rgba(60, 60, 67, .84); }
 [data-game="quem"] { --tint: var(--c-quem); --tint-ink: #1D7343; --on-tint: var(--ink); --bg: #C2F1D7; --surface-2: #DFF8EA; --label-2: rgba(60, 60, 67, .84); }
+[data-game="angry"] { --tint: var(--c-angry); --tint-ink: #9A5200; --on-tint: var(--ink); --bg: #FFE0BF; --surface-2: #FFEEDC; --label-2: rgba(60, 60, 67, .84); }
 @media (prefers-color-scheme: dark) {
   :root[data-game="impostor"]:not([data-theme="light"]) { --bg: #2E0E11; --surface: #372226; --surface-2: #45292E; }
   :root[data-game="cartas"]:not([data-theme="light"]) { --bg: #2E2702; --surface: #37321C; --surface-2: #443E22; }
   :root[data-game="conexoes"]:not([data-theme="light"]) { --bg: #1E192E; --surface: #2D2939; --surface-2: #383247; }
   :root[data-game="quem"]:not([data-theme="light"]) { --bg: #092616; --surface: #1F3229; --surface-2: #263E33; }
+  :root[data-game="angry"]:not([data-theme="light"]) { --bg: #2E1A07; --surface: #3A2A1B; --surface-2: #483523; }
 }
 :root[data-game="impostor"][data-theme="dark"] { --bg: #2E0E11; --surface: #372226; --surface-2: #45292E; }
 :root[data-game="cartas"][data-theme="dark"] { --bg: #2E2702; --surface: #37321C; --surface-2: #443E22; }
 :root[data-game="conexoes"][data-theme="dark"] { --bg: #1E192E; --surface: #2D2939; --surface-2: #383247; }
 :root[data-game="quem"][data-theme="dark"] { --bg: #092616; --surface: #1F3229; --surface-2: #263E33; }
+:root[data-game="angry"][data-theme="dark"] { --bg: #2E1A07; --surface: #3A2A1B; --surface-2: #483523; }
 [data-game="hub"] { --tint: var(--ink); --tint-ink: var(--ink); --on-tint: #FFFFFF; --tint-dark: #FFFFFF; }
 @media (prefers-color-scheme: dark) {
   :root[data-game="hub"]:not([data-theme="light"]) { --tint: #FFFFFF; --on-tint: #000000; }
