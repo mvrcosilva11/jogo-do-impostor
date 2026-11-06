@@ -67,6 +67,7 @@
       });
     });
     icons(scope);
+    tips(scope);
   }
   function setLang(l) {
     l = l === 'en' ? 'en' : 'pt';
@@ -161,10 +162,11 @@
   function studioRows() {
     var on = studioOn();
     doc.querySelectorAll('[data-jm-studio-row]').forEach(function (box) {
+      var short = box.getAttribute('data-jm-studio-row') === 'compact';
       box.innerHTML = '<div class="group studio-row"><div class="row big" data-jm="studio-toggle"><span class="tile-ic lg studio">' + icon('flame') + '</span>' +
-        '<div class="row-b"><span class="row-x"><span class="row-t">Studio Mode</span><span class="row-s">' +
+        '<div class="row-b"><span class="row-x"><span class="row-t">Studio Mode</span>' + (short ? '' : '<span class="row-s">' +
         (on ? L('Ligado: o pessoal do estúdio está em jogo.', 'On: the studio crew is in the game.') : L('Os nomes e as piadas cá de casa. Com fogo.', 'The house names and inside jokes. With fire.')) +
-        '</span></span><button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="Studio Mode" data-jm="studio-toggle"></button></div></div></div>';
+        '</span>') + '</span><button type="button" class="switch" role="switch" aria-checked="' + on + '" aria-label="Studio Mode" data-jm="studio-toggle"></button></div></div></div>';
     });
     doc.querySelectorAll('.switch[data-jm="studio-toggle"]').forEach(function (b) { b.setAttribute('aria-checked', String(on)); });
   }
@@ -349,7 +351,11 @@
       closeSheet();
       if (a && a.fn) a.fn();
     });
-    var btn = layer.querySelector('.btn:last-child');
+    // o foco começa no botão que não estraga nada (o primeiro que não é "danger")
+    var btns = layer.querySelectorAll('[data-jm-a]'), safe = btns.length - 1;
+    for (var k = 0; k < acts.length; k++) if (!/danger/.test(acts[k].cls || '')) { safe = k; break; }
+    if (acts.some(function (a) { return /danger/.test(a.cls || ''); }) === false) safe = btns.length - 1;
+    var btn = btns[safe];
     if (btn) { try { btn.focus({ preventScroll: true }); } catch (e) {} }
   }
 
@@ -403,7 +409,24 @@
     }
     if (a === 'studio-toggle') { e.preventDefault(); setStudio(!studioOn()); }
   });
-  doc.addEventListener('keydown', function (e) { if (e.key === 'Escape' && layer) closeSheet(); });
+  doc.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && layer) { closeSheet(); return; }
+    // dentro de uma folha ou de um alerta, o Tab anda só lá dentro
+    if (e.key !== 'Tab') return;
+    var open = doc.querySelectorAll('.alert-layer, .sheet-layer:not([hidden])'), top = open[open.length - 1];
+    if (!top) return;
+    var f = Array.prototype.filter.call(top.querySelectorAll('button, a[href], input, textarea, select, [tabindex]:not([tabindex="-1"])'), function (el) { return !el.disabled && el.offsetParent !== null && !el.classList.contains('scrim'); });
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (!top.contains(doc.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  // os botões só com ícone mostram o nome ao passar o rato e com o teclado (data-tip = o aria-label)
+  function tips(scope) {
+    (scope || doc).querySelectorAll('.nb.icon[aria-label]').forEach(function (b) { b.setAttribute('data-tip', b.getAttribute('aria-label')); });
+  }
 
   // o caminho de volta à página com todos os joguinhos
   function home() {
@@ -564,7 +587,7 @@
     lang: lang, setLang: setLang, L: L, i18n: i18n,
     translate: translate, tx: tx,
     studioOn: studioOn, setStudio: setStudio, door: door, studio: studio, fire: fire,
-    icon: icon, icons: icons, screen: screen, toast: toast, alert: alert, sheet: sheet, closeSheet: closeSheet,
+    icon: icon, icons: icons, tips: tips, screen: screen, toast: toast, alert: alert, sheet: sheet, closeSheet: closeSheet,
     settings: settings, settingsExtra: null, home: home,
     play: play, muted: muted, esc: esc
   };
@@ -572,6 +595,7 @@
   function boot() {
     i18n();
     icons();
+    tips();
     studioRows();
     if (studioOn()) fireBg(true, false);
     root.addEventListener('jm:lang', studioRows);

@@ -82,11 +82,38 @@
     };
     if (conn) { try { conn.close(); } catch (e) {} conn = null; }
     status(msg[why] || L("Erro de ligação.", "Connection error.")); showScreen("screen-online", true);
+    if (why === "noroom" || why === "full") fieldErr("mp-code", msg[why]);
+  }
+  // o erro fica colado ao campo que o causou (e some assim que se escreve)
+  function fieldErr(id, msg) {
+    var g = el(id + "-g"), e = el(id + "-err");
+    if (g) g.classList.toggle("err", !!msg);
+    if (e) { e.textContent = msg || ""; e.hidden = !msg; }
+    if (msg) el(id).focus();
   }
   function needName() {
     if (el("mp-name").value.trim()) { try { localStorage.setItem(NAME_KEY, el("mp-name").value.trim()); } catch (e) {} return true; }
-    status(L("Escreve o teu nome primeiro.", "Write your name first.")); el("mp-name").focus(); return false;
+    fieldErr("mp-name", L("Escreve o nome que os outros vão ver.", "Write the name the others will see.")); return false;
   }
+
+  /* O ecrã online serve para criar OU para entrar: o início já disse qual (a mesma linguagem em todos os joguinhos). */
+  var onlineMode = "create";
+  function openOnline(mode) {
+    onlineMode = mode;
+    var join = mode === "join";
+    el("online-t").textContent = join ? L("Entrar numa sala", "Join a room") : L("Criar sala", "Create a room");
+    el("mp-code-box").hidden = !join;
+    el("btn-online-go").textContent = join ? L("Entrar na sala", "Join the room") : L("Criar a sala", "Create the room");
+    el("online-how").innerHTML = (join
+      ? [L("Escreve o teu nome e o código que te mandaram.", "Write your name and the code you were sent."), L("Espera na sala até o anfitrião começar.", "Wait in the room until the host starts.")]
+      : [L("Escreve o teu nome e cria a sala.", "Write your name and create the room."), L("Manda o convite aos outros (ou diz-lhes o código).", "Send the invite to the others (or tell them the code)."), L("Quando estiverem todos (3 ou mais), começa.", "When everyone is in (3 or more), start.")]
+    ).map(function (t) { return "<li>" + escapeHtml(t) + "</li>"; }).join("");
+    status("");
+    fieldErr("mp-name", "");
+    fieldErr("mp-code", "");
+    showScreen("screen-online");
+  }
+  function onlineGo() { if (onlineMode === "join") join(); else create(); }
   function create() {
     if (!needName()) return;
     isHost = true; status(L("A criar a sala…", "Creating the room…")); resetSig();
@@ -98,13 +125,13 @@
   function join() {
     var code = Online.normCode(el("mp-code").value);
     if (!needName()) return;
-    if (code.length !== 4) { status(L("O código tem 4 letras.", "The code has 4 letters.")); el("mp-code").focus(); return; }
+    if (code.length !== 4) { fieldErr("mp-code", L("O código tem 4 letras, como ABCD.", "The code has 4 letters, like ABCD.")); return; }
     isHost = false; status(L("A entrar…", "Joining…")); resetSig();
     var o = cbs(); o.room = code; conn = new Online.Guest(o); conn.open(); showScreen("screen-lobby");
   }
   function leaveNow() {
     if (conn) { try { conn.close(true); } catch (e) {} conn = null; }
-    pub = priv = null; clues = {}; resetSig(); showScreen("screen-online", true); status("");
+    pub = priv = null; clues = {}; resetSig(); showScreen("screen-home", true); status("");
   }
   function leave() {
     if (!conn) { leaveNow(); return; }
@@ -142,6 +169,10 @@
     }).join("");
     el("lobby-host").hidden = !isHost;
     el("btn-lobby-start").hidden = !isHost;
+    el("lobby-how").innerHTML = (isHost
+      ? [L("Manda o convite (ou diz o código) aos outros.", "Send the invite (or tell the code) to the others."), L("Quando estiverem todos, toca em <b>Começar</b>.", "When everyone is in, tap <b>Start</b>.")]
+      : [L("Já estás na sala.", "You're in the room."), L("O anfitrião começa quando estiverem todos.", "The host starts when everyone is in.")]
+    ).map(function (t) { return "<li>" + t + "</li>"; }).join("");
     el("lobby-wait").textContent = isHost ? (n < 3 ? L("Faltam " + (3 - n) + " para começar (mínimo 3).", (3 - n) + " more to start (at least 3).") : L("Mantém esta página aberta: é o teu telemóvel que dá as cartas.", "Keep this page open: your phone deals the cards."))
       : L("À espera que o anfitrião comece…", "Waiting for the host to start…");
     if (isHost) {
@@ -150,10 +181,10 @@
       el("mp-manual-box").hidden = mySettings.impMode !== "manual";
       el("mp-imp-count").textContent = mySettings.impCount;
       el("mp-imp-word").textContent = impWordMp(mySettings.impCount);
-      el("mp-imp-note").textContent = L("Máximo " + maxImpMp(n) + " com " + n + " jogadores", "Up to " + maxImpMp(n) + " with " + n + " players");
+      el("mp-imp-note").textContent = L("Máximo " + maxImpMp(n) + " com " + n + (n === 1 ? " jogador" : " jogadores"), "Up to " + maxImpMp(n) + " with " + n + (n === 1 ? " player" : " players"));
       el("mp-imp-minus").disabled = mySettings.impCount <= 1;
       el("mp-imp-plus").disabled = mySettings.impCount >= maxImpMp(n);
-      el("btn-lobby-start").disabled = n < 3;
+      el("btn-lobby-start").setAttribute("aria-disabled", String(n < 3));
     }
   }
 
@@ -354,15 +385,21 @@
 
   function setup() {
     try { el("mp-name").value = localStorage.getItem(NAME_KEY) || ""; } catch (e) {}
-    el("btn-online").addEventListener("click", function () { status(""); JM.play("tap"); showScreen("screen-online"); });
-    el("btn-create").addEventListener("click", create);
-    el("btn-join").addEventListener("click", join);
-    el("mp-code").addEventListener("input", function (e) { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4); });
+    el("btn-online").addEventListener("click", function () { openOnline("create"); });
+    el("btn-online-join").addEventListener("click", function () { openOnline("join"); });
+    el("btn-online-go").addEventListener("click", onlineGo);
+    el("mp-name").addEventListener("input", function () { fieldErr("mp-name", ""); });
+    el("mp-name").addEventListener("keydown", function (e) { if (e.key === "Enter") { if (onlineMode === "join" && !el("mp-code").value) el("mp-code").focus(); else onlineGo(); } });
+    el("mp-code").addEventListener("input", function (e) { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4); fieldErr("mp-code", ""); });
     el("mp-code").addEventListener("keydown", function (e) { if (e.key === "Enter") join(); });
     el("btn-lobby-leave").addEventListener("click", leave);
     el("btn-mp-leave").addEventListener("click", leave);
     $$("[data-mpleave]").forEach(function (b) { b.addEventListener("click", leave); });
-    el("btn-lobby-start").addEventListener("click", hostStart);
+    el("btn-lobby-start").addEventListener("click", function () {
+      var n = conn && conn.G ? conn.G.players.length : 0;
+      if (n < 3) { JM.toast(L("Faltam " + (3 - n) + (3 - n === 1 ? " jogador" : " jogadores") + " para começar.", (3 - n) + " more " + (3 - n === 1 ? "player" : "players") + " to start.")); return; }
+      hostStart();
+    });
 
     $$("#lobby-host [data-mpmode]").forEach(function (b) {
       b.addEventListener("click", function () { mySettings.impMode = b.getAttribute("data-mpmode"); JM.play("select"); resetSig(); renderLobby(); });
@@ -375,10 +412,12 @@
 
     bindCard();
     el("btn-share").addEventListener("click", shareRoom);
+    el("btn-invite").addEventListener("click", shareRoom);
     window.addEventListener("jm:lang", function () { withEN(function () { resetSig(); render(); }); });
 
     var room = new URLSearchParams(location.search).get("sala");
-    if (room) { room = Online.normCode(room); if (room.length === 4) { el("mp-code").value = room; showScreen("screen-online"); setTimeout(function () { el(el("mp-name").value ? "btn-join" : "mp-name").focus(); }, 80); } }
+    // quem abre o convite cai logo em "Entrar numa sala", com o código já escrito: só falta o nome
+    if (room) { room = Online.normCode(room); if (room.length === 4) { openOnline("join"); el("mp-code").value = room; setTimeout(function () { el(el("mp-name").value ? "btn-online-go" : "mp-name").focus(); }, 80); } }
 
     document.addEventListener("visibilitychange", function () { if (!document.hidden && conn) conn.check(); });
     window.addEventListener("pagehide", function () { if (conn) { try { conn.close(true); } catch (e) {} } });

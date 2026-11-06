@@ -144,3 +144,4 @@ input, textarea { -webkit-user-select: text; user-select: text; }
   .card { min-height: 220px; }
   .card.small { min-height: 170px; }
 }
+.room .invite { margin-top: 16px; }

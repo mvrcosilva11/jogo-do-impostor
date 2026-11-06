@@ -22,7 +22,7 @@
     <section class="screen on" id="screen-home">
       <header class="nav">
         <div class="nav-l"><a class="nb back" data-jm-home href="https://joguinhos-do-marco.netlify.app/"><i class="ic" data-ic="chevron-left"></i><span>Joguinhos</span></a></div>
-        <div class="nav-r"><button type="button" class="nb icon" data-jm="settings" aria-label="Definições" data-en-aria="Settings"><i class="ic" data-ic="gear"></i></button></div>
+        <div class="nav-r"><button type="button" class="nb icon" id="nav-rules" aria-label="Como se joga" data-en-aria="How to play"><i class="ic" data-ic="question"></i></button><button type="button" class="nb icon" data-jm="settings" aria-label="Definições" data-en-aria="Settings"><i class="ic" data-ic="gear"></i></button></div>
       </header>
 
       <div class="ghero">
@@ -34,26 +34,37 @@
         </div>
       </div>
 
-      <!-- Studio Mode: o interruptor (o jm.js desenha-o) -->
-      <div class="list" data-jm-studio-row></div>
-
+      <!-- as maneiras de jogar, pelo número de telemóveis (a mesma linguagem em todos os joguinhos) -->
       <div class="list">
-        <h2 class="list-h" data-en="Pick a mode">Escolhe o modo</h2>
+        <h2 class="list-h"><i class="ic" data-ic="phone"></i><span data-en="On one phone">Num só telemóvel</span><small data-en="You pass the phone around to see your card.">Passam o telemóvel de mão em mão para verem a carta.</small></h2>
         <div class="group">
           <button type="button" class="row big" id="btn-start">
-            <span class="tile-ic lg"><i class="ic" data-ic="phone"></i></span>
-            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Pass the phone">Passa o telemóvel</span><span class="row-s" data-en="One phone for everyone. The app picks the word.">Um telemóvel para todos. A app escolhe a palavra.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+            <span class="tile-ic lg"><i class="ic" data-ic="dice"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="The app picks the word">A app escolhe a palavra</span><span class="row-s" data-en="The classic: everyone gets the word except the impostor.">O clássico: todos recebem a palavra, menos o impostor.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
           </button>
           <button type="button" class="row big" id="btn-custom">
             <span class="tile-ic lg"><i class="ic" data-ic="pencil"></i></span>
-            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Your own word">Palavra vossa</span><span class="row-s" data-en="Everyone writes a word and one is drawn. Whoever wrote it is never the impostor.">Cada um escreve uma palavra e sai uma à sorte. Quem a escreveu nunca é impostor.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
-          </button>
-          <button type="button" class="row big" id="btn-online">
-            <span class="tile-ic lg"><i class="ic" data-ic="online"></i></span>
-            <div class="row-b"><span class="row-x"><span class="row-t">Online</span><span class="row-s" data-en="Each on their own phone, with clues in words or photos. Two rounds, then a vote.">Cada um no seu telemóvel, com pistas escritas ou em foto. Duas rondas e votação.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="You write the words">Vocês escrevem as palavras</span><span class="row-s" data-en="Each writes one and one is drawn. Whoever wrote it is never the impostor.">Cada um escreve uma e sai uma à sorte. Quem a escreveu nunca é impostor.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
           </button>
         </div>
       </div>
+
+      <div class="list">
+        <h2 class="list-h"><i class="ic" data-ic="phones"></i><span data-en="Each on their own phone">Cada um no seu telemóvel</span><small data-en="Clues in words or photos, two rounds, then a vote.">Pistas escritas ou em foto, duas rondas e votação.</small></h2>
+        <div class="group">
+          <button type="button" class="row big" id="btn-online">
+            <span class="tile-ic lg"><i class="ic" data-ic="plus"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Create a room">Criar sala</span><span class="row-s" data-en="You get a code to send to the others.">Recebes um código para mandar aos outros.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+          </button>
+          <button type="button" class="row big" id="btn-online-join">
+            <span class="tile-ic lg"><i class="ic" data-ic="arrow-right"></i></span>
+            <div class="row-b"><span class="row-x"><span class="row-t" data-en="Join a room">Entrar numa sala</span><span class="row-s" data-en="Type the code someone sent you.">Escreve o código que te mandaram.</span></span><i class="ic chev" data-ic="chevron-right"></i></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Studio Mode: o interruptor (o jm.js desenha-o) -->
+      <div class="list" data-jm-studio-row></div>
 
       <!-- só com o Studio Mode ligado (app.js preenche) -->
       <div class="list" id="studio-list" hidden></div>
@@ -81,7 +92,7 @@
           <p class="list-f" id="players-note" aria-live="polite"></p>
         </div>
       </div>
-      <div class="dock"><button type="button" class="btn fill lg block" id="btn-players-next" data-en="Continue">Continuar</button></div>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-players-next" data-en="Choose the impostors">Escolher os impostores</button></div>
     </section>
 
     <!-- ECRÃ: IMPOSTORES (as regras da ronda) -->
@@ -94,9 +105,9 @@
       <div class="body flush">
         <div class="list">
           <div class="group">
-            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many?">Quantos?</span>
+            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many impostors?">Quantos impostores?</span>
               <div class="seg" role="group" style="min-width:190px">
-                <button type="button" class="mode-btn" data-mode="manual" aria-pressed="true" data-en="Choose">Escolher</button>
+                <button type="button" class="mode-btn" data-mode="manual" aria-pressed="true" data-en="I choose">Eu escolho</button>
                 <button type="button" class="mode-btn" data-mode="random" aria-pressed="false" data-en="Random">À sorte</button>
               </div></div></div>
             <div class="row" id="manual-box"><div class="row-b"><span class="row-x"><span class="row-t"><b id="imp-count">1</b> <span id="imp-word"></span></span><span class="row-s" id="imp-max-note"></span></span>
@@ -200,28 +211,24 @@
     <section class="screen" id="screen-online">
       <header class="nav">
         <div class="nav-l"><button type="button" class="nb icon" data-back="screen-home" aria-label="Voltar" data-en-aria="Back"><i class="ic" data-ic="chevron-left"></i></button></div>
-        <h1 class="nav-t">Online</h1>
+        <h1 class="nav-t" id="online-t"></h1>
         <div class="nav-r"></div>
       </header>
       <div class="body flush">
+        <ol class="how" id="online-how"></ol>
         <div class="list">
-          <h2 class="list-h small" data-en="Your name">O teu nome</h2>
-          <div class="group"><div class="row solo"><input id="mp-name" class="field plain" type="text" placeholder="Como te chamas?" data-en-ph="What's your name?" autocomplete="off" autocapitalize="words" maxlength="20" enterkeyhint="done" /></div></div>
+          <h2 class="list-h small"><label for="mp-name" data-en="Your name (the others see it)">O teu nome (os outros veem-no)</label></h2>
+          <div class="group" id="mp-name-g"><div class="row solo"><input id="mp-name" class="field plain" type="text" placeholder="Ana" autocomplete="nickname" autocapitalize="words" maxlength="20" enterkeyhint="next" /></div></div>
+          <p class="field-err" id="mp-name-err" hidden></p>
         </div>
-        <div class="list">
-          <div class="group">
-            <button type="button" class="row big" id="btn-create"><span class="tile-ic lg"><i class="ic" data-ic="plus"></i></span><div class="row-b"><span class="row-x"><span class="row-t" data-en="Create a room">Criar sala</span><span class="row-s" data-en="You get a code to share with the others.">Recebes um código para partilhar com os outros.</span></span><i class="ic chev" data-ic="chevron-right"></i></div></button>
-          </div>
+        <div class="list" id="mp-code-box">
+          <h2 class="list-h small"><label for="mp-code" data-en="Room code (4 letters)">Código da sala (4 letras)</label></h2>
+          <div class="group" id="mp-code-g"><div class="row solo"><input id="mp-code" class="field plain code-in" type="text" placeholder="ABCD" maxlength="4" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" /></div></div>
+          <p class="field-err" id="mp-code-err" hidden></p>
         </div>
-        <div class="list">
-          <h2 class="list-h small" data-en="Or join with a code">Ou entra com um código</h2>
-          <div class="group"><div class="row"><div class="row-b">
-            <input id="mp-code" class="field plain code-in" type="text" placeholder="CÓDIGO" data-en-ph="CODE" maxlength="4" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Código da sala" data-en-aria="Room code" />
-            <button type="button" class="btn sm tinted" id="btn-join" data-en="Join">Entrar</button>
-          </div></div></div>
-          <p class="list-f warn-f" id="mp-status" role="status"></p>
-        </div>
+        <p class="list-f warn-f" id="mp-status" role="status"></p>
       </div>
+      <div class="dock"><button type="button" class="btn fill lg block" id="btn-online-go"></button></div>
     </section>
 
     <!-- ONLINE: sala de espera -->
@@ -229,13 +236,14 @@
       <header class="nav">
         <div class="nav-l"><button type="button" class="nb" id="btn-lobby-leave" data-en="Leave">Sair</button></div>
         <h1 class="nav-t"><span data-en="Room">Sala</span> <span class="net-dot" id="net-dot" aria-hidden="true"></span></h1>
-        <div class="nav-r"><button type="button" class="nb icon" id="btn-share" aria-label="Partilhar a sala" data-en-aria="Share the room"><i class="ic" data-ic="share"></i></button></div>
+        <div class="nav-r"><button type="button" class="nb icon" id="btn-share" aria-label="Mandar o convite" data-en-aria="Send the invite"><i class="ic" data-ic="share"></i></button></div>
       </header>
       <div class="body flush">
         <div class="room">
           <div class="code-tiles" id="lobby-code" role="img"></div>
-          <p class="fine center" data-en="Share the code or the link: whoever has it can come in.">Partilha o código ou o link: quem o tiver pode entrar.</p>
+          <button type="button" class="btn lg block invite" id="btn-invite"><i class="ic" data-ic="share"></i><span data-en="Send the invite">Mandar o convite</span></button>
         </div>
+        <ol class="how" id="lobby-how"></ol>
         <div class="list">
           <h2 class="list-h"><span data-en="Players">Jogadores</span> <span class="count" id="lobby-count"></span></h2>
           <div class="group" id="lobby-players"></div>
@@ -243,9 +251,9 @@
         <div class="list" id="lobby-host">
           <h2 class="list-h" data-en="Impostors">Impostores</h2>
           <div class="group">
-            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many?">Quantos?</span>
+            <div class="row"><div class="row-b"><span class="row-x row-t" data-en="How many impostors?">Quantos impostores?</span>
               <div class="seg" role="group" style="min-width:190px">
-                <button type="button" data-mpmode="manual" aria-pressed="true" data-en="Choose">Escolher</button>
+                <button type="button" data-mpmode="manual" aria-pressed="true" data-en="I choose">Eu escolho</button>
                 <button type="button" data-mpmode="random" aria-pressed="false" data-en="Random">À sorte</button>
               </div></div></div>
             <div class="row" id="mp-manual-box"><div class="row-b"><span class="row-x"><span class="row-t"><b id="mp-imp-count">1</b> <span id="mp-imp-word"></span></span><span class="row-s" id="mp-imp-note"></span></span>

@@ -187,7 +187,7 @@ function cleanNames() {
 function validatePlayers() {
   const names = cleanNames(), low = names.map((n) => n.toLowerCase());
   const dup = low.some((n, i) => low.indexOf(n) !== i);
-  $("#btn-players-next").disabled = names.length < 3 || dup;
+  $("#btn-players-next").setAttribute("aria-disabled", String(names.length < 3 || dup));
   $("#players-note").textContent = dup ? L("Há nomes repetidos: muda um deles.", "There are repeated names: change one.")
     : names.length < 3 ? L("Mínimo 3 jogadores. Os nomes ficam guardados neste telemóvel.", "At least 3 players. The names are kept on this phone.")
     : L(names.length + " jogadores. Os nomes ficam guardados neste telemóvel.", names.length + " players. The names are kept on this phone.");
@@ -207,7 +207,7 @@ function updateCounter() {
   const n = cleanNames().length, max = maxImpostorsManual(n);
   $("#imp-count").textContent = state.impostorCount;
   $("#imp-word").textContent = impWord(state.impostorCount);
-  $("#imp-max-note").textContent = L("Máximo " + max + " com " + n + " jogadores", "Up to " + max + " with " + n + " players");
+  $("#imp-max-note").textContent = L("Máximo " + max + " com " + n + (n === 1 ? " jogador" : " jogadores"), "Up to " + max + " with " + n + (n === 1 ? " player" : " players"));
   $("#imp-minus").disabled = state.impostorCount <= 1;
   $("#imp-plus").disabled = state.impostorCount >= max;
 }
@@ -562,6 +562,7 @@ function init() {
   $("#btn-start").addEventListener("click", () => openPlayers(false));
   $("#btn-custom").addEventListener("click", () => openPlayers(true));
   $("#btn-rules").addEventListener("click", rules);
+  $("#nav-rules").addEventListener("click", rules);
 
   // Botões "voltar" e "sair"
   $$("[data-back]").forEach((b) => b.addEventListener("click", () => { JM.play("tap"); if (b.dataset.back === "screen-home") goHome(); else showScreen(b.dataset.back, true); }));
@@ -570,6 +571,16 @@ function init() {
   // Jogadores
   $("#btn-add-player").addEventListener("click", addPlayer);
   $("#btn-players-next").addEventListener("click", () => {
+    const names = cleanNames(), low = names.map((n) => n.toLowerCase());
+    if (names.length < 3 || low.some((n, i) => low.indexOf(n) !== i)) {
+      const empty = Array.from(document.querySelectorAll("#players-list input")).find((i) => !i.value.trim());
+      if (names.length < 3) {
+        const k = 3 - names.length;
+        JM.toast(L("Faltam " + k + (k === 1 ? " nome" : " nomes") + " (mínimo 3 jogadores).", k + " more " + (k === 1 ? "name" : "names") + " (at least 3 players)."));
+        if (empty) empty.focus(); else addPlayer();
+      } else JM.toast(L("Há dois nomes iguais: muda um deles.", "Two names are the same: change one."));
+      return;
+    }
     state.players = cleanNames();
     savePlayers();
     setupImpostorScreen();
