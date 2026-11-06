@@ -20,6 +20,7 @@
    Som         Os joguinhos não têm sons (pedido do Marco): JM.play(nome) existe mas não faz nada. A única coisa que se ouve
                é a música do Impostor, que usa JM.muted(); um jogo com música põe JM.hasMusic = true e aparece "Música" nas Definições.
    Fogo        JM.studio(on): só o efeito (som + chamas), sem mudar a escolha (ex.: a regra de uma sala do Cartas)
+   Ranking     JM.rank: uma conta para todos os joguinhos, um Elo por joguinho e um geral (ver a secção "o ranking").
    Movimento reduzido: o fogo passa a um brilho curto. */
 (function (root) {
   'use strict';
@@ -583,13 +584,329 @@
     F.raf = requestAnimationFrame(frame);
   }
 
+  /* ───────────────────────── o ranking ─────────────────────────
+     Uma conta para todos os joguinhos (a mesma do Angry Men, guardada em "am.account"), um Elo por joguinho e um geral.
+     O servidor é o do site dos Joguinhos (/api/, netlify/functions/jm-api.mjs); os jogos que vivem noutros sites
+     falam com ele pelo endereço completo. Sem servidor (sem net, no computador de testes) joga-se na mesma, sem contar.
+       <div class="list" data-jm-rank-row="impostor"></div>   a linha "Ranking" no início de cada joguinho (o jm.js desenha-a)
+       JM.rank.open(jogo) · JM.rank.account(depois) · JM.rank.name() · JM.rank.note() (a frase para as salas online)
+       JM.rank.start(jogo, id) · JM.rank.end(jogo, id, [[1.º lugar], [2.º], …]) · JM.rank.puzzle(id, ganhou, erros, grupos) */
+  var RK_API = (/^(joguinhos-do-marco\.netlify\.app|localhost|127\.0\.0\.1)$/.test(location.hostname) ? '' : 'https://joguinhos-do-marco.netlify.app') + '/api/';
+  var RK_ACC = 'am.account', RK_ME = 'jm.rank';
+  var RK_TIERS = [0, 850, 900, 950, 1000, 1050, 1100, 1150, 1200, 1275, 1350, 1425, 1500, 1600, 1700, 1850], RK_PLACE = 5;
+  var RK_GAMES = ['all', 'impostor', 'cartas', 'conexoes', 'quem', 'angry'];
+  var RK_SHORT = { all: ['Geral', 'Overall'], impostor: ['Impostor', 'Impostor'], cartas: ['Cartas', 'Cards'], conexoes: ['Connections', 'Connections'], quem: ['Quem é Quem', "Who's Who"], angry: ['Angry Men', 'Angry Men'] };
+  var RK_NAMES = [['Novato I', 'Rookie I'], ['Novato II', 'Rookie II'], ['Novato III', 'Rookie III'],
+    ['Amador I', 'Amateur I'], ['Amador II', 'Amateur II'], ['Amador III', 'Amateur III'],
+    ['Craque I', 'Ace I'], ['Craque II', 'Ace II'], ['Craque III', 'Ace III'],
+    ['Mestre I', 'Master I'], ['Mestre II', 'Master II'], ['Mestre III', 'Master III'],
+    ['Grão-Mestre', 'Grandmaster'], ['Campeão', 'Champion'], ['Fenómeno', 'Phenom'], ['Lenda dos Joguinhos', 'Joguinhos Legend']];
+  // o Angry Men tem os seus nomes (os de sempre)
+  var RK_ANGRY = [['Ferro-Velho I', 'Scrap I'], ['Ferro-Velho II', 'Scrap II'], ['Ferro-Velho III', 'Scrap III'],
+    ['Tijolo I', 'Brick I'], ['Tijolo II', 'Brick II'], ['Tijolo III', 'Brick III'],
+    ['Betão I', 'Concrete I'], ['Betão II', 'Concrete II'], ['Betão III', 'Concrete III'],
+    ['Aço I', 'Steel I'], ['Aço II', 'Steel II'], ['Aço III', 'Steel III'],
+    ['Demolidor', 'Wrecker'], ['Demolidor de Elite', 'Elite Wrecker'], ['Mestre da Fisga', 'Sling Master'], ['Lenda da Demolição', 'Demolition Legend']];
+  var RK_COL = [['#D49A6A', '#8A5236', '#5A3220'], ['#E8806A', '#B03E2C', '#6E2216'], ['#C7CFD6', '#7D8893', '#4A535C'],
+    ['#8EC0F2', '#3B6DAE', '#1E3E6E'], ['#FFD27A', '#D98A1C', '#8A520A'], ['#FFE9A0', '#E8AE20', '#8F6608'], ['#D6A6F0', '#8E44AD', '#4E1E66'], ['#FF9A9F', '#D62B3A', '#7A0F1A']];
+  var RK_HOW = {
+    all: ['Todas as partidas a contar, de todos os joguinhos, mexem neste Elo. É a tabela de quem joga melhor a tudo.', 'Every ranked game, in every game, moves this Elo. It’s the table of who plays best at everything.'],
+    impostor: ['Cada um no seu telemóvel, cada partida entre contas conta: se apanham o impostor, sobe quem o apanhou; se ele escapa, sobe o impostor.', 'Each on their phone, every game between accounts counts: catch the impostor and the catchers go up; if they get away, the impostor does.'],
+    cartas: ['Cada jogo jogado até ao fim conta: ficas à frente de quem fez menos pontos e atrás de quem fez mais.', 'Every game played to the end counts: you finish ahead of whoever scored less and behind whoever scored more.'],
+    conexoes: ['Cada ronda conta uma vez por conta: resolver com poucos erros sobe, perder desce. Cada ronda tem o seu Elo, por isso as que custam a muita gente valem mais.', 'Each round counts once per account: solving with few mistakes goes up, losing goes down. Each round has its own Elo, so the ones many people miss are worth more.'],
+    quem: ['Cada um no seu telemóvel, com os dois ligados: quem adivinha primeiro a pessoa do outro sobe.', 'Each on their phone, with both linked: whoever guesses the other one’s person first goes up.'],
+    angry: ['Online, cada jogo entre duas contas conta: do Ferro-Velho à Lenda da Demolição.', 'Online, every game between two accounts counts: from Scrap to Demolition Legend.']
+  };
+  var RK_ERR = {
+    name: ['O nome tem de ter 3 a 16 letras ou números (pode ter _ . -).', 'The name needs 3 to 16 letters or numbers (_ . - allowed).'],
+    taken: ['Esse nome já tem dono. Escolhe outro.', 'That name is taken. Pick another one.'],
+    pass: ['A palavra-passe tem de ter pelo menos 6 caracteres.', 'The password needs at least 6 characters.'],
+    wrong: ['Nome ou palavra-passe errados.', 'Wrong name or password.'],
+    slow: ['Demasiadas tentativas. Espera um bocadinho e tenta outra vez.', 'Too many tries. Wait a little and try again.'],
+    net: ['Sem ligação ao servidor do ranking. Vê se tens internet.', 'No connection to the ranking server. Check your internet.']
+  };
+
+  function rkTier(elo, games) {
+    if (!(games >= RK_PLACE)) return -1;
+    var t = 0;
+    for (var i = 0; i < RK_TIERS.length; i++) if (elo >= RK_TIERS[i]) t = i;
+    return t;
+  }
+  function rkTierName(t, g) { return t < 0 ? L('Em calibração', 'Placement') : L.apply(null, (g === 'angry' ? RK_ANGRY : RK_NAMES)[t]); }
+  function rkGame(g) { return L.apply(null, RK_SHORT[g] || RK_SHORT.all); }
+  // o emblema: um escudo da cor do escalão; dentro, 1 a 3 divisas (I–III) ou o símbolo dos escalões de cima
+  function rkBadge(t, px, g) {
+    px = px || 28;
+    var k = t < 0 ? -1 : t < 12 ? Math.floor(t / 3) : 4 + (t - 12), c = k < 0 ? ['#E5E5EA', '#A1A1AA', '#6B6B73'] : RK_COL[k];
+    var id = 'jr' + Math.random().toString(36).slice(2, 8), inner = '';
+    if (t < 0) inner = '<text x="16" y="21.5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" font-family="ui-rounded,system-ui,sans-serif">?</text>';
+    else if (t < 12) {
+      for (var j = 0; j <= t % 3; j++) { var y = 19.5 - j * 4.6 + (t % 3) * 2.3; inner += '<path d="M9.5 ' + (y + 2.6) + 'L16 ' + (y - 1.2) + 'L22.5 ' + (y + 2.6) + '" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>'; }
+    } else if (g === 'angry' && t < 15) inner = [
+      // os do Angry Men: a bola de demolição, a estrela e a fisga
+      '<path d="M16 7v6" stroke="#fff" stroke-width="1.8" stroke-dasharray="1.6 1.2"/><circle cx="16" cy="18.5" r="5.2" fill="#fff"/><circle cx="14.4" cy="17" r="1.4" fill="' + c[1] + '" opacity=".5"/>',
+      '<path d="M16 9.2l2 4.3 4.6.5-3.4 3.1 1 4.6L16 19.4l-4.2 2.3 1-4.6-3.4-3.1 4.6-.5z" fill="#fff"/>',
+      '<path d="M11 9.5c0 4 2.2 6 5 6.6M21 9.5c0 4-2.2 6-5 6.6M16 16v7" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M11 9.5h10" stroke="#fff" stroke-width="1.2" opacity=".7"/>'][t - 12];
+    // os dos outros joguinhos: a estrela, a taça e a estrela com brilho
+    else if (t === 12) inner = '<path d="M16 9.2l2 4.3 4.6.5-3.4 3.1 1 4.6L16 19.4l-4.2 2.3 1-4.6-3.4-3.1 4.6-.5z" fill="#fff"/>';
+    else if (t === 13) inner = '<path d="M11.5 9h9v3.6a4.5 4.5 0 0 1-9 0z" fill="#fff"/><path d="M11.5 10.2H9.6v.9a2.6 2.6 0 0 0 2.4 2.6M20.5 10.2h1.9v.9a2.6 2.6 0 0 1-2.4 2.6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M14.8 16.8h2.4v3h-2.4z" fill="#fff"/><rect x="12.2" y="19.6" width="7.6" height="2.2" rx="1.1" fill="#fff"/>';
+    else if (t === 14) inner = '<path d="M16 8.5l2.2 5 5.3.4-4 3.5 1.2 5.2L16 19.9l-4.7 2.7 1.2-5.2-4-3.5 5.3-.4z" fill="#fff"/><circle cx="16" cy="16.6" r="1.6" fill="' + c[1] + '"/>';
+    else inner = '<path d="M9.5 20.5l-1-9 4.2 3.6L16 9l3.3 6.1 4.2-3.6-1 9z" fill="#fff"/><rect x="9.5" y="21.6" width="13" height="2" rx="1" fill="#fff"/>';
+    return '<svg class="jr-b" width="' + px + '" height="' + px + '" viewBox="0 0 32 32" role="img" aria-label="' + esc(rkTierName(t, g)) + '">' +
+      '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + c[0] + '"/><stop offset="1" stop-color="' + c[1] + '"/></linearGradient></defs>' +
+      '<path d="M16 2.5l11 4v8.6c0 7-4.6 11.8-11 14.4C9.6 26.9 5 22.1 5 15.1V6.5z" fill="url(#' + id + ')" stroke="' + c[2] + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M16 4.6l9 3.3v2.4C21 9 11 9 7 10.3V7.9z" fill="#fff" opacity=".28"/>' + inner + '</svg>';
+  }
+
+  function rkAcc() { try { var a = JSON.parse(get(RK_ACC)); return a && a.token && a.name ? a : null; } catch (e) { return null; } }
+  function rkMe() {
+    var a = rkAcc();
+    if (!a) return null;
+    try { var m = JSON.parse(get(RK_ME)); return m && m.name === a.name ? m : null; } catch (e) { return null; }
+  }
+  function rkReq(method, action, body) {
+    var opt = { method: method, headers: { 'content-type': 'application/json' } };
+    if (method === 'POST') opt.body = JSON.stringify(body || {});
+    var url = RK_API + action + (method === 'GET' && body ? '?' + new URLSearchParams(body).toString() : '');
+    return fetch(url, opt).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (r.status === 404 && !d.error) return { ok: false, status: 0, data: {} };     // sem servidor: cai na página de erro
+        return { ok: r.ok, status: r.status, data: d };
+      });
+    }).catch(function () { return { ok: false, status: 0, data: {} }; });
+  }
+  function rkLogout() { put(RK_ACC, null); put(RK_ME, null); rkRows(); emit('jm:account', null); }
+  var rkBusy = null;
+  function rkRefresh(force) {
+    var a = rkAcc(), m = rkMe();
+    if (!a) return Promise.resolve(null);
+    if (!force && m && Date.now() - (m.at || 0) < 60000) return Promise.resolve(m);
+    if (rkBusy) return rkBusy;
+    rkBusy = rkReq('POST', 'me', { token: a.token }).then(function (r) {
+      rkBusy = null;
+      if (r.status === 401) { rkLogout(); return null; }
+      if (!r.ok) return m;
+      var me = { name: r.data.name, games: r.data.games, at: Date.now() };
+      put(RK_ME, JSON.stringify(me));
+      rkRows();
+      return me;
+    });
+    return rkBusy;
+  }
+  function rkCard(g) { var m = rkMe(); return m && m.games && m.games[g] ? m.games[g] : null; }
+
+  // a linha "Ranking" no início de cada joguinho e da página inicial
+  function rkRows() {
+    var a = rkAcc();
+    doc.querySelectorAll('[data-jm-rank-row]').forEach(function (box) {
+      var g = box.getAttribute('data-jm-rank-row') || 'all', c = rkCard(g), sub, ic;
+      if (a && c) {
+        var t = rkTier(c.elo, c.games);
+        ic = rkBadge(t, 40, g);
+        sub = a.name + ' · ' + (t < 0 ? rkTierName(t, g) + ' · ' + c.games + '/' + RK_PLACE + L(' partidas', ' games') : rkTierName(t, g) + ' · ' + c.elo + ' Elo' + (c.pos ? ' · ' + c.pos + 'º' : ''));
+      } else if (a) {
+        ic = icon('trophy');
+        sub = a.name + ' · ' + L('a carregar…', 'loading…');
+      } else {
+        ic = icon('trophy');
+        sub = g === 'all' ? L('Todos os joguinhos numa só tabela. Cria conta para entrares.', 'Every game in one table. Create an account to get in.')
+          : g === 'conexoes' ? L('Cria conta e cada ronda conta para o ranking.', 'Create an account and every round counts.')
+          : L('Cria conta e as partidas online contam para o ranking.', 'Create an account and online games count.');
+      }
+      box.innerHTML = '<div class="group"><button type="button" class="row big" data-jm="rank" data-g="' + g + '"><span class="tile-ic lg jr-ic">' + ic + '</span>' +
+        '<div class="row-b"><span class="row-x"><span class="row-t">' + (g === 'all' ? L('Ranking geral', 'Overall ranking') : 'Ranking') + '</span><span class="row-s">' + esc(sub) + '</span></span>' + icon('chevron-right', 'chev') + '</div></button></div>';
+    });
+  }
+
+  // a folha do ranking: os joguinhos em cima, o teu lugar, a tabela e os escalões
+  function rkOpen(g) {
+    g = RK_GAMES.indexOf(g) >= 0 ? g : 'all';
+    var s = sheet('<div class="jr"><div class="chips jr-tabs" role="group" aria-label="' + L('Joguinho', 'Game') + '">' + RK_GAMES.map(function (k) {
+      return '<button type="button" class="chip" data-jr-g="' + k + '" aria-pressed="' + (k === g) + '">' + esc(rkGame(k)) + '</button>';
+    }).join('') + '</div><div class="jr-me" id="jr-me"></div><div class="jr-list" id="jr-list"></div><div class="jr-how" id="jr-how"></div><div class="jr-foot" id="jr-foot"></div></div>', { title: 'Ranking' });
+    var cur = g, seq = 0;
+    function paint() {
+      var a = rkAcc(), c = rkCard(cur), me = s.querySelector('#jr-me');
+      if (!a) {
+        me.className = 'jr-me cta';
+        me.innerHTML = '<p>' + esc(L('Cria uma conta (ou entra na tua) para apareceres aqui. Depois não tens de fazer nada: as partidas contam sozinhas.', 'Create an account (or sign in) to show up here. Then there’s nothing to do: games count by themselves.')) + '</p>' +
+          '<button type="button" class="btn fill block" data-jr="acc">' + L('Criar conta ou entrar', 'Create an account or sign in') + '</button>';
+      } else {
+        c = c || { elo: 1000, games: 0, w: 0, l: 0, d: 0, peak: 1000, pos: null, of: 0 };
+        var t = rkTier(c.elo, c.games), nx = t >= 0 && t + 1 < RK_TIERS.length ? RK_TIERS[t + 1] : null, base = t < 0 ? 0 : RK_TIERS[t];
+        var prog = t < 0 ? c.games / RK_PLACE : nx ? (c.elo - base) / (nx - base) : 1;
+        me.className = 'jr-me';
+        me.innerHTML = rkBadge(t, 60, cur) + '<div class="jr-mx"><b class="jr-n">' + esc(a.name) + '</b><span class="jr-t">' + esc(rkTierName(t, cur)) + (t >= 0 ? ' · ' + c.elo + ' Elo' : '') + '</span>' +
+          '<span class="jr-bar" role="img" aria-label="' + Math.round(Math.max(0, Math.min(1, prog)) * 100) + '%"><i style="width:' + Math.round(Math.max(0, Math.min(1, prog)) * 100) + '%"></i></span></div>' +
+          '<p class="jr-s">' + esc(t < 0 ? L('Faltam ' + (RK_PLACE - c.games) + (RK_PLACE - c.games === 1 ? ' partida' : ' partidas') + ' para teres escalão.', (RK_PLACE - c.games) + ' more ' + (RK_PLACE - c.games === 1 ? 'game' : 'games') + ' until you get a rank.')
+            : nx ? L('Faltam ' + (nx - c.elo) + ' pontos para ' + rkTierName(t + 1, cur) + '.', (nx - c.elo) + ' points to ' + rkTierName(t + 1, cur) + '.') : L('Estás no topo.', 'You’re at the top.')) + '</p>' +
+          '<dl class="jr-st"><div><dt>' + L('Lugar', 'Place') + '</dt><dd>' + (c.pos ? c.pos + 'º' : '—') + '</dd></div><div><dt>' + L('Partidas', 'Games') + '</dt><dd>' + c.games + '</dd></div>' +
+          '<div><dt>' + L('Vitórias', 'Wins') + '</dt><dd>' + c.w + '</dd></div><div><dt>' + L('Melhor', 'Best') + '</dt><dd>' + c.peak + '</dd></div></dl>';
+      }
+      s.querySelector('#jr-how').innerHTML = '<details><summary>' + L('Como funciona e os escalões', 'How it works and the ranks') + icon('chevron-down', 'chev') + '</summary>' +
+        '<p>' + esc(L.apply(null, RK_HOW[cur])) + ' ' + esc(L('Toda a gente começa nos 1000 e as primeiras 5 partidas são de calibração. Ganhar a quem está acima vale mais do que ganhar a quem está abaixo.', 'Everyone starts at 1000 and the first 5 games are placement. Beating someone above you is worth more than beating someone below.')) + '</p>' +
+        '<ol class="jr-ladder">' + RK_TIERS.map(function (e, t) { return '<li>' + rkBadge(t, 30, cur) + '<span class="jr-ln">' + esc(rkTierName(t, cur)) + '</span><span class="jr-le">' + (t ? e + '+' : '<' + RK_TIERS[1]) + '</span></li>'; }).join('') + '</ol></details>';
+      s.querySelector('#jr-foot').innerHTML = a ? '<button type="button" class="btn block" data-jr="out">' + L('Sair da conta ', 'Sign out of ') + esc(a.name) + '</button>' : '';
+      board();
+    }
+    function board() {
+      var box = s.querySelector('#jr-list'), mine = (rkAcc() || {}).name, n = ++seq, k = cur;
+      box.innerHTML = '<p class="jr-wait"><span class="spin" aria-hidden="true"></span>' + L('A carregar o ranking…', 'Loading the ranking…') + '</p>';
+      rkReq('GET', 'board', { game: k }).then(function (r) {
+        if (n !== seq || !doc.body.contains(s)) return;
+        if (!r.ok) { box.innerHTML = '<p class="jr-wait">' + L('Sem ligação ao servidor do ranking. Tenta mais logo.', 'No connection to the ranking server. Try again later.') + '</p>'; return; }
+        var P = r.data.players || [];
+        if (!P.length) { box.innerHTML = '<p class="jr-wait">' + esc(k === 'conexoes' ? L('Ainda ninguém jogou com conta. Sê o primeiro!', 'Nobody has played with an account yet. Be the first!') : L('Ainda ninguém jogou a contar. Sê o primeiro!', 'Nobody has played a ranked game yet. Be the first!')) + '</p>'; return; }
+        var pos = 0;
+        box.innerHTML = '<ol class="jr-ol">' + P.slice(0, 100).map(function (p) {
+          var placed = p.tier >= 0;
+          if (placed) pos++;
+          var sub = k === 'all' && p.by ? '<span class="jr-dots" aria-label="' + Object.keys(p.by).map(rkGame).join(', ') + '">' + RK_GAMES.slice(1).filter(function (x) { return p.by[x]; }).map(function (x) { return '<i style="--c:var(--c-' + x + ')"></i>'; }).join('') + '</span>' + esc(rkTierName(p.tier, k)) : esc(rkTierName(p.tier, k));
+          return '<li class="jr-row' + (mine && p.name.toLowerCase() === mine.toLowerCase() ? ' me' : '') + '"><span class="jr-p">' + (placed ? pos : '–') + '</span>' + rkBadge(p.tier, 30, k) +
+            '<span class="jr-x"><span class="jr-rn">' + esc(p.name) + '</span><span class="jr-rt">' + sub + '</span></span>' +
+            '<span class="jr-e"><b>' + (placed ? p.elo : '—') + '</b><small>' + p.w + L('V', 'W') + ' · ' + p.l + L('D', 'L') + '</small></span></li>';
+        }).join('') + '</ol>';
+      });
+    }
+    s.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-jr-g]');
+      if (b) {
+        cur = b.getAttribute('data-jr-g');
+        s.querySelectorAll('[data-jr-g]').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+        paint();
+        return;
+      }
+      var x = e.target.closest('[data-jr]');
+      if (!x) return;
+      if (x.getAttribute('data-jr') === 'acc') rkAccount(function () { rkOpen(cur); });
+      else alert({ title: L('Sair da conta?', 'Sign out?'), text: L('Para voltar a entrar neste telemóvel precisas da palavra-passe.', 'To sign back in on this phone you’ll need the password.'),
+        actions: [{ t: L('Ficar', 'Stay') }, { t: L('Sair', 'Sign out'), cls: 'danger', fn: function () { rkLogout(); toast(L('Saíste da conta.', 'Signed out.')); } }] });
+    });
+    paint();
+    if (rkAcc()) rkRefresh(true).then(function () { if (doc.body.contains(s)) paint(); });
+  }
+
+  // criar conta ou entrar (o nome é para sempre)
+  function rkAccount(then) {
+    var reg = true;
+    var s = sheet('<form class="jr-acc" novalidate>' +
+      '<div class="seg" role="group" aria-label="' + L('Conta', 'Account') + '"><button type="button" data-k="register" aria-pressed="true">' + L('Criar conta', 'Create account') + '</button><button type="button" data-k="login" aria-pressed="false">' + L('Já tenho conta', 'I have one') + '</button></div>' +
+      '<label class="jr-l" for="jr-name">' + L('Nome', 'Name') + '</label>' +
+      '<input class="field" id="jr-name" name="username" autocomplete="username" maxlength="16" autocapitalize="off" autocorrect="off" spellcheck="false" required>' +
+      '<p class="jr-hint" id="jr-hint"></p>' +
+      '<label class="jr-l" for="jr-pass">' + L('Palavra-passe', 'Password') + '</label>' +
+      '<input class="field" id="jr-pass" name="password" type="password" maxlength="72" required>' +
+      '<p class="field-err" id="jr-warn" role="alert"></p>' +
+      '<button type="submit" class="btn fill lg block" id="jr-go"></button>' +
+      '<p class="list-f">' + esc(L('É a mesma conta em todos os joguinhos (e a do Angry Men). Guardamos só o nome, a palavra-passe cifrada e os resultados das partidas a contar. O nome e o Elo aparecem no ranking, que é público.', 'It’s the same account in every game (and in Angry Men). We only keep the name, the encrypted password and the results of ranked games. The name and the Elo show on the ranking, which is public.')) + '</p>' +
+      '</form>', { title: L('A tua conta', 'Your account') });
+    var form = s.querySelector('form');
+    function mode(k) {
+      reg = k === 'register';
+      form.querySelectorAll('.seg button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-k') === k)); });
+      form.querySelector('#jr-go').textContent = reg ? L('Criar conta', 'Create account') : L('Entrar', 'Sign in');
+      form.querySelector('#jr-hint').textContent = reg ? L('3 a 16 letras ou números. É o teu nome no ranking e não se pode mudar.', '3 to 16 letters or numbers. It’s your name on the ranking and can’t be changed.') : '';
+      form.querySelector('#jr-hint').hidden = !reg;
+      form.querySelector('#jr-pass').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+      form.querySelector('#jr-warn').textContent = '';
+    }
+    mode('register');
+    form.querySelectorAll('.seg button').forEach(function (b) { b.addEventListener('click', function () { mode(b.getAttribute('data-k')); }); });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var name = form.querySelector('#jr-name').value.trim(), pass = form.querySelector('#jr-pass').value, go = form.querySelector('#jr-go'), warn = form.querySelector('#jr-warn');
+      var bad = reg && !/^[\p{L}\p{N}_.-]{3,16}$/u.test(name) ? 'name' : reg && pass.length < 6 ? 'pass' : !name || !pass ? 'wrong' : null;
+      if (bad) { warn.textContent = L.apply(null, RK_ERR[bad]); return; }
+      go.disabled = true;
+      warn.textContent = '';
+      rkReq('POST', reg ? 'register' : 'login', { name: name, pass: pass }).then(function (r) {
+        go.disabled = false;
+        if (r.ok && r.data.token) {
+          put(RK_ACC, JSON.stringify({ name: r.data.me.name, token: r.data.token, me: r.data.me }));
+          put(RK_ME, null);
+          closeSheet();
+          toast(reg ? L('Conta criada. Bem-vindo, ', 'Account created. Welcome, ') + r.data.me.name + '!' : L('Olá outra vez, ', 'Welcome back, ') + r.data.me.name + '!');
+          rkRows();
+          emit('jm:account', r.data.me.name);
+          rkRefresh(true);
+          if (then) then();
+          return;
+        }
+        var k = r.status === 0 ? 'net' : (r.data && RK_ERR[r.data.error] ? r.data.error : 'net');
+        warn.textContent = L.apply(null, RK_ERR[k]);
+      });
+    });
+    setTimeout(function () { try { form.querySelector('#jr-name').focus(); } catch (e) {} }, 300);
+  }
+
+  // a frase das salas online: conta ou não conta para o ranking
+  function rkNote() {
+    var a = rkAcc();
+    return '<p class="jr-note">' + icon('trophy') + '<span>' + (a ? L('Conta para o ranking de <b>' + esc(a.name) + '</b>, contra quem também tiver conta.', 'Counts for <b>' + esc(a.name) + '</b>’s ranking, against anyone else with an account.')
+      : L('Sem conta, esta partida não conta para o ranking. ', 'Without an account, this game won’t count for the ranking. ') + '<button type="button" class="jr-link" data-jm="rank-acc">' + L('Criar conta ou entrar', 'Create an account or sign in') + '</button>') + '</span></p>';
+  }
+  // o fim de uma partida a contar: diz quanto subiu ou desceu
+  function rkSay(g, o) {
+    if (!o) return;
+    if (o.status === 'done') {
+      var d = o.delta, t = rkTier(o.elo, 99);
+      toast(L('Ranking: ', 'Ranking: ') + (d >= 0 ? '+' : '−') + Math.abs(d) + ' · ' + o.elo + ' Elo' + (o.tier >= 0 ? ' · ' + rkTierName(o.tier, g) : ''));
+      rkRefresh(true);
+      emit('jm:rank', { game: g, outcome: o, tier: t });
+    } else if (o.status === 'void') toast(L('Esta partida não contou: os telemóveis não disseram o mesmo.', 'This game didn’t count: the phones didn’t agree.'));
+  }
+  function rkStart(g, id) {
+    var a = rkAcc();
+    return a ? rkReq('POST', 'play/start', { token: a.token, game: g, id: id }) : Promise.resolve(null);
+  }
+  function rkEnd(g, id, order) {
+    var a = rkAcc();
+    if (!a) return Promise.resolve(null);
+    return rkReq('POST', 'play/end', { token: a.token, game: g, id: id, order: order }).then(function (r) {
+      if (!r.ok) return null;
+      if (r.data.status !== 'pending') { rkSay(g, r.data); return r.data; }
+      // à espera dos outros telemóveis: pergunta outra vez durante um minuto
+      return new Promise(function (res) {
+        var n = 0;
+        (function again() {
+          setTimeout(function () {
+            rkReq('POST', 'play/status', { token: a.token, game: g, id: id }).then(function (q) {
+              if (q.ok && q.data.status !== 'pending') { rkSay(g, q.data); res(q.data); return; }
+              if (++n < 12) again(); else res(r.data);
+            });
+          }, 5000);
+        })();
+      });
+    });
+  }
+  function rkPuzzle(id, won, mistakes, found) {
+    var a = rkAcc();
+    if (!a) return Promise.resolve(null);
+    return rkReq('POST', 'puzzle', { token: a.token, id: id, won: !!won, mistakes: mistakes || 0, found: found || 0 }).then(function (r) {
+      if (r.ok) rkSay('conexoes', r.data);
+      return r.ok ? r.data : null;
+    });
+  }
+  doc.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target.closest('[data-jm="rank"], [data-jm="rank-acc"]') : null;
+    if (!el) return;
+    if (el.getAttribute('data-jm') === 'rank') rkOpen(el.getAttribute('data-g') || 'all');
+    else rkAccount(null);
+  });
+  var rank = {
+    open: rkOpen, account: rkAccount, rows: rkRows, refresh: rkRefresh, note: rkNote,
+    name: function () { var a = rkAcc(); return a ? a.name : null; },
+    start: rkStart, end: rkEnd, puzzle: rkPuzzle, say: rkSay,
+    tier: rkTier, tierName: rkTierName, badge: rkBadge, logout: rkLogout
+  };
+
   var JM = root.JM = {
     lang: lang, setLang: setLang, L: L, i18n: i18n,
     translate: translate, tx: tx,
     studioOn: studioOn, setStudio: setStudio, door: door, studio: studio, fire: fire,
     icon: icon, icons: icons, tips: tips, screen: screen, toast: toast, alert: alert, sheet: sheet, closeSheet: closeSheet,
     settings: settings, settingsExtra: null, home: home,
-    play: play, muted: muted, esc: esc
+    play: play, muted: muted, esc: esc, rank: rank
   };
 
   function boot() {
@@ -599,6 +916,9 @@
     studioRows();
     if (studioOn()) fireBg(true, false);
     root.addEventListener('jm:lang', studioRows);
+    rkRows();
+    root.addEventListener('jm:lang', rkRows);
+    if (rkAcc()) rkRefresh(false);
     doc.querySelectorAll('a[data-jm-home]').forEach(function (a) { a.href = home(); });
     doc.querySelectorAll('[data-jm-door]').forEach(door);
     scrolled();

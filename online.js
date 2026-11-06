@@ -41,11 +41,13 @@
     };
   }
   function client() { return new Net.Client({ url: BROKER, clientId: 'imp-' + rid(10) }); }
+  // o nome da conta do ranking de cada jogador (JM.rank); vazio sem conta
+  function accOf(a) { return typeof a === 'string' && /^[\p{L}\p{N}_.-]{3,16}$/u.test(a) ? a : ''; }
 
   /* ───────────────────────────── ANFITRIÃO ───────────────────────────── */
   function Host(o) {
     this.role = 'host';
-    this.secret = o.secret; this.name = o.name;
+    this.secret = o.secret; this.name = o.name; this.acc = accOf(o.acc);
     this.onUpdate = o.onUpdate || noop; this.onNet = o.onNet || noop;
     this.net = null; this.T = null; this.G = null;
     this.clues = {}; this.dead = false; this._beat = null; this._probe = null;
@@ -78,7 +80,7 @@
     this.G = {
       room: code, gid: rid(8), phase: 'lobby', round: 0, maxRounds: MAX_ROUNDS,
       settings: { impMode: 'random', impCount: 1, category: 'all' },
-      players: [{ id: rid(8), secret: this.secret, name: this.name, seen: Date.now(), sub: false, voted: false }],
+      players: [{ id: rid(8), secret: this.secret, name: this.name, acc: this.acc, seen: Date.now(), sub: false, voted: false }],
       hostId: null, word: null, impIds: [], allImp: false, hints: {},
       revealOrder: [], revealIdx: 0, votes: {}
     };
@@ -108,9 +110,9 @@
     if (m.t === 'join') {
       if (!p) {
         if (this.G.phase !== 'lobby') { this.net.publish(this.T.to(m.s), JSON.stringify({ gid: this.G.gid, out: 'full' }), false); return; }
-        p = { id: rid(8), secret: m.s, name: String(m.name || 'Jogador').slice(0, 20), seen: Date.now(), sub: false, voted: false };
+        p = { id: rid(8), secret: m.s, name: String(m.name || 'Jogador').slice(0, 20), acc: accOf(m.a), seen: Date.now(), sub: false, voted: false };
         this.G.players.push(p);
-      } else { p.name = String(m.name || p.name).slice(0, 20); p.seen = Date.now(); }
+      } else { p.name = String(m.name || p.name).slice(0, 20); if (m.a !== undefined) p.acc = accOf(m.a); p.seen = Date.now(); }
       this._emit(); return;
     }
     if (!p) return;
@@ -134,7 +136,7 @@
 
   Host.prototype._pub = function () {
     var G = this.G, now = Date.now();
-    var players = G.players.map(function (p) { return { id: p.id, n: p.name, sub: !!p.sub, voted: !!p.voted }; });
+    var players = G.players.map(function (p) { return { id: p.id, n: p.name, sub: !!p.sub, voted: !!p.voted, a: p.acc || '' }; });
     var pub = { gid: G.gid, room: G.room, host: G.hostId, phase: G.phase, round: G.round, maxRounds: G.maxRounds, ts: now, players: players };
     if (G.phase === 'reveal') {
       pub.reveal = { round: G.round, idx: G.revealIdx, id: G.revealOrder[G.revealIdx] || '', total: G.revealOrder.length };
@@ -149,6 +151,7 @@
         word: G.allImp ? null : (G.word ? G.word.p : null),
         allImp: !!G.allImp,
         imps: G.players.filter(function (p) { return G.impIds.indexOf(p.id) >= 0; }).map(function (p) { return p.name; }),
+        ii: G.impIds.slice(),
         tally: arr, top: top
       };
     }
@@ -220,6 +223,12 @@
     this.clues = {}; this.G.players.forEach(function (p) { p.sub = false; p.voted = false; });
     this._emit();
   };
+  // entrou (ou saiu) da conta do ranking com a sala aberta
+  Host.prototype.setAcc = function (a) {
+    this.acc = accOf(a);
+    var me = this.G && this._bySecret(this.secret);
+    if (me) { me.acc = this.acc; this._emit(); }
+  };
   Host.prototype.setSettings = function (s) { if (this.G) { for (var k in s) this.G.settings[k] = s[k]; } };
   Host.prototype.check = function () { if (this.net) this.net.check(); };
   Host.prototype.close = function () {
@@ -234,7 +243,7 @@
   /* ───────────────────────────── CONVIDADO ───────────────────────────── */
   function Guest(o) {
     this.role = 'guest';
-    this.room = normCode(o.room); this.secret = o.secret; this.name = o.name;
+    this.room = normCode(o.room); this.secret = o.secret; this.name = o.name; this.acc = accOf(o.acc);
     this.onUpdate = o.onUpdate || noop; this.onNet = o.onNet || noop; this.onFail = o.onFail || noop;
     this.pub = null; this.priv = null; this.clues = {}; this.myId = null;
     this.dead = false; this.net = null; this._t0 = 0; this._lastPub = 0; this._n = 0; this.pending = [];
@@ -255,7 +264,8 @@
   };
 
   Guest.prototype._send = function (m) { var o = { s: this.secret }, k; for (k in m) o[k] = m[k]; if (this.net) this.net.publish(this.T.act, JSON.stringify(o), false); };
-  Guest.prototype._hello = function () { this._send({ t: 'join', name: this.name }); };
+  Guest.prototype._hello = function () { this._send({ t: 'join', name: this.name, a: this.acc }); };
+  Guest.prototype.setAcc = function (a) { this.acc = accOf(a); if (!this.dead) this._hello(); };
 
   Guest.prototype._onMsg = function (topic, payload) {
     if (this.dead) return;

@@ -66,7 +66,7 @@
   function myName() { return (el("mp-name").value || L("Jogador", "Player")).trim().slice(0, 20); }
   function cbs() {
     return {
-      secret: secret, name: myName(),
+      secret: secret, name: myName(), acc: (JM.rank && JM.rank.name()) || '',
       onUpdate: function (p, mine, c) { pub = p; priv = mine; clues = c || clues; render(); },
       onNet: function (on) { var d = el("net-dot"); if (d) d.classList.toggle("on", on); },
       onFail: function (why) { fail(why); }
@@ -142,10 +142,38 @@
     });
   }
 
+  /* ── o ranking (JM.rank) ──
+     Cada partida com contas conta: se apanham o impostor ganha a equipa que o apanhou, se ele escapa ganha o impostor.
+     Cada telemóvel com conta diz ao servidor que entrou e, no fim, quem ganhou; conta o que a maioria disse.
+     A partida em que eram todos impostores não conta. */
+  var rk = { gid: "", ended: false };
+  function rankHook() {
+    if (!JM.rank || !JM.rank.name() || !pub.gid || !pub.room) return;
+    var ph = pub.phase, id = pub.room + "-" + pub.gid;
+    if (ph === "clue" || ph === "reveal" || ph === "vote") {
+      if (rk.gid !== pub.gid) { rk = { gid: pub.gid, ended: false }; JM.rank.start("impostor", id); }
+    } else if (ph === "result" && rk.gid === pub.gid && !rk.ended) {
+      rk.ended = true;
+      var r = pub.result || {};
+      if (r.allImp || !Array.isArray(r.ii)) return;
+      var caught = (r.top || []).some(function (nm) { return (r.imps || []).indexOf(nm) >= 0; });
+      var imps = [], crew = [], mine = JM.rank.name().toLowerCase();
+      pub.players.forEach(function (p) { if (p.a) (r.ii.indexOf(p.id) >= 0 ? imps : crew).push(p.a); });
+      var order = (caught ? [crew, imps] : [imps, crew]).filter(function (g) { return g.length; });
+      if (order.some(function (g) { return g.some(function (n) { return n.toLowerCase() === mine; }); })) JM.rank.end("impostor", id, order);
+    }
+  }
+  window.addEventListener("jm:account", function () {
+    if (conn && conn.setAcc) conn.setAcc((JM.rank && JM.rank.name()) || "");
+    resetSig();
+    render();
+  });
+
   // ── router ──
   function render() {
     if (!pub) return;
     var ph = pub.phase;
+    rankHook();
     if (ph === "lobby") renderLobby();
     else if (ph === "clue") renderClue();
     else if (ph === "reveal") renderReveal();
@@ -156,7 +184,7 @@
   function renderLobby() {
     showScreenIf("screen-lobby");
     var n = pub.players.length;
-    var lsig = JM.lang() + "|" + (pub.room || "") + "|" + pub.players.map(function (p) { return p.n + (p.id === pub.host ? "*" : ""); }).join(",") + "|" + isHost + "|" + mySettings.impMode + mySettings.impCount + "|" + maxImpMp(n);
+    var lsig = JM.lang() + "|" + (pub.room || "") + "|" + pub.players.map(function (p) { return p.n + (p.id === pub.host ? "*" : ""); }).join(",") + "|" + isHost + "|" + mySettings.impMode + mySettings.impCount + "|" + maxImpMp(n) + "|" + ((JM.rank && JM.rank.name()) || "");
     if (!changed("lobby", lsig)) return;
     var code = pub.room || "----";
     el("lobby-code").innerHTML = code.split("").map(function (c) { return "<span>" + escapeHtml(c) + "</span>"; }).join("");
@@ -167,6 +195,7 @@
       return '<div class="row"><span class="tile-ic">' + JM.icon(p.id === pub.host ? "crown" : "person") + '</span><div class="row-b"><span class="row-x row-t">' + escapeHtml(p.n) + "</span>" +
         (p.id === pub.host ? '<span class="badge">' + L("anfitrião", "host") + "</span>" : "") + (me && p.id !== pub.host ? '<span class="badge">' + L("tu", "you") + "</span>" : "") + "</div></div>";
     }).join("");
+    el("lobby-rank").innerHTML = JM.rank ? JM.rank.note() : "";
     el("lobby-host").hidden = !isHost;
     el("btn-lobby-start").hidden = !isHost;
     el("lobby-how").innerHTML = (isHost

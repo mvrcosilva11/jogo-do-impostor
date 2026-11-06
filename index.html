@@ -66,6 +66,9 @@
       <!-- Studio Mode: o interruptor (o jm.js desenha-o) -->
       <div class="list" data-jm-studio-row></div>
 
+      <!-- o ranking (o jm.js desenha a linha) -->
+      <div class="list" data-jm-rank-row="impostor"></div>
+
       <!-- só com o Studio Mode ligado (app.js preenche) -->
       <div class="list" id="studio-list" hidden></div>
 
@@ -247,6 +250,7 @@
         <div class="list">
           <h2 class="list-h"><span data-en="Players">Jogadores</span> <span class="count" id="lobby-count"></span></h2>
           <div class="group" id="lobby-players"></div>
+          <div id="lobby-rank"></div>
         </div>
         <div class="list" id="lobby-host">
           <h2 class="list-h" data-en="Impostors">Impostores</h2>
